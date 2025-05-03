@@ -1,13 +1,14 @@
 # rcond
 
-A simple daemon to manage network connections through NetworkManager's D-Bus interface.
+A simple daemon to manage 
+- network connections through NetworkManager's D-Bus interface
+- system hostname through the hostname1 service
 
 It provides a REST API to:
 - Create and activate WiFi connections
 - Deactivate WiFi connections 
 - Remove stored connection profiles
-
-The daemon is designed to run on Linux systems with NetworkManager.
+- Get and set the system hostname
 
 ## Build and Run
 
@@ -46,6 +47,7 @@ All endpoints use JSON for request and response payloads.
 ```bash
 curl -v -X POST http://localhost:8080/network/up \
   -H "Content-Type: application/json" \
+  -H "X-API-Token: 1234567890" \
   -d '{
     "interface": "wlan0",
     "ssid":      "MyNetworkSSID",
@@ -58,6 +60,7 @@ curl -v -X POST http://localhost:8080/network/up \
 ```bash
 curl -v -X POST http://localhost:8080/network/down \
   -H "Content-Type: application/json" \
+  -H "X-API-Token: 1234567890" \
   -d '{
     "interface": "wlan0"
   }'
@@ -66,13 +69,18 @@ curl -v -X POST http://localhost:8080/network/down \
 ### Remove the stored connection
 
 ```bash
-curl -v -X POST http://localhost:8080/network/remove
+curl -v -X POST http://localhost:8080/network/remove \
+  -H "X-API-Token: 1234567890" \
+  -d '{
+    "interface": "wlan0"
+  }'
 ```
 
 ### Get the hostname
 
 ```bash
-curl -v http://localhost:8080/hostname
+curl -v http://localhost:8080/hostname \
+  -H "X-API-Token: 1234567890"
 ```
 
 ### Set the hostname
@@ -80,6 +88,7 @@ curl -v http://localhost:8080/hostname
 ```bash
 curl -v -X POST http://localhost:8080/hostname \
   -H "Content-Type: application/json" \
+  -H "X-API-Token: 1234567890" \
   -d '{
     "hostname": "MyHostname"
   }'

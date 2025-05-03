@@ -1,4 +1,4 @@
-// Usage: rcond <address>
+// Usage: rcond <address> <api-token>
 
 package main
 
@@ -20,12 +20,17 @@ func usage() {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		usage()
+
+	addr := "0.0.0.0:8080"
+	if len(os.Args) > 1 {
+		addr = os.Args[1]
+	}
+	apiToken := os.Getenv("RCOND_API_TOKEN")
+	if apiToken == "" {
+		log.Fatal("RCOND_API_TOKEN environment variable not set")
 	}
 
-	addr := os.Args[1]
-	srv := http.NewServer(addr)
+	srv := http.NewServer(addr, apiToken)
 	srv.RegisterRoutes()
 
 	log.Printf("Starting server on %s", addr)
