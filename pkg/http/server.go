@@ -43,6 +43,8 @@ func (s *Server) RegisterRoutes() {
 	s.router.HandleFunc("/network/up", HandleNetworkUp).Methods(http.MethodPost)
 	s.router.HandleFunc("/network/down", HandleNetworkDown).Methods(http.MethodPost)
 	s.router.HandleFunc("/network/remove", HandleNetworkRemove).Methods(http.MethodPost)
+	s.router.HandleFunc("/hostname", HandleGetHostname).Methods(http.MethodGet)
+	s.router.HandleFunc("/hostname", HandleSetHostname).Methods(http.MethodPost)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {

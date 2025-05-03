@@ -94,3 +94,43 @@ paths:
           description: Connection profile removed successfully
         '500':
           description: Internal server error
+
+  /hostname:
+    get:
+      summary: Get system hostname
+      description: Returns the current system hostname
+      responses:
+        '200':
+          description: Hostname retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Current hostname
+                example: "MyHostname"
+        '500':
+          description: Internal server error
+    post:
+      summary: Set system hostname
+      description: Sets a new system hostname
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - hostname
+              properties:
+                hostname:
+                  type: string
+                  description: New hostname to set
+                  example: "MyHostname"
+      responses:
+        '200':
+          description: Hostname set successfully
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Internal server error
+

@@ -253,6 +253,32 @@ func GetDeviceByIpIface(conn *dbus.Conn, iface string) (dbus.ObjectPath, error) 
 	return devPath, nil
 }
 
+// GetHostname returns the hostname of the current machine
+func GetHostname() (string, error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "", fmt.Errorf("GetHostname failed: %v", err)
+	}
+	return hostname, nil
+}
+
+// SetHostname changes the static hostname via the system bus.
+// newHost is your desired hostname, interactive=false skips any prompt.
+func SetHostname(newHost string) error {
+	return withDbus(func(conn *dbus.Conn) error {
+		obj := conn.Object(
+			"org.freedesktop.hostname1",
+			dbus.ObjectPath("/org/freedesktop/hostname1"),
+		)
+		return obj.Call(
+			"org.freedesktop.hostname1.SetStaticHostname",
+			0,       // no special flags
+			newHost, // the hostname you want
+			false,   // interactive? (PolicyKit)
+		).Err
+	})
+}
+
 // Up creates and activates a WiFi access point connection.
 // It takes the interface name, SSID, password and UUID as arguments.
 // If a connection with the given UUID exists, it will be reused.

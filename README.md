@@ -28,6 +28,8 @@ The full API specification can be found in [api/rcond.yaml](api/rcond.yaml).
 | POST | `/network/up` | Create and activate a WiFi access point |
 | POST | `/network/down` | Deactivate a WiFi interface |
 | POST | `/network/remove` | Remove the stored connection profile |
+| GET | `/hostname` | Get the hostname |
+| POST | `/hostname` | Set the hostname |
 
 ### Response Codes
 
@@ -39,7 +41,7 @@ The full API specification can be found in [api/rcond.yaml](api/rcond.yaml).
 ### Request/Response Format
 All endpoints use JSON for request and response payloads.
 
-### 1) Bring a network up
+### Bring a network up
 
 ```bash
 curl -v -X POST http://localhost:8080/network/up \
@@ -51,7 +53,7 @@ curl -v -X POST http://localhost:8080/network/up \
   }'
 ```
 
-### 2) Bring a network down
+### Bring a network down
 
 ```bash
 curl -v -X POST http://localhost:8080/network/down \
@@ -61,8 +63,24 @@ curl -v -X POST http://localhost:8080/network/down \
   }'
 ```
 
-### 3) Remove the stored connection
+### Remove the stored connection
 
 ```bash
 curl -v -X POST http://localhost:8080/network/remove
+```
+
+### Get the hostname
+
+```bash
+curl -v http://localhost:8080/hostname
+```
+
+### Set the hostname
+
+```bash
+curl -v -X POST http://localhost:8080/hostname \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "MyHostname"
+  }'
 ```
