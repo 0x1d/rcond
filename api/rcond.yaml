@@ -1,0 +1,96 @@
+openapi: 3.0.0
+info:
+  title: rcond API
+  description: API for managing network connections through NetworkManager
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+
+  /network/up:
+    post:
+      summary: Create and activate WiFi access point
+      description: Creates and activates a WiFi access point on the specified interface
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - interface
+                - ssid
+                - password
+              properties:
+                interface:
+                  type: string
+                  description: Network interface name
+                  example: "wlan0"
+                ssid:
+                  type: string
+                  description: WiFi network SSID
+                  example: "MyNetworkSSID"
+                password:
+                  type: string
+                  description: WiFi network password
+                  example: "SuperSecretPassword"
+      responses:
+        '200':
+          description: Network interface brought up successfully
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Internal server error
+
+  /network/down:
+    post:
+      summary: Deactivate network interface
+      description: Deactivates the specified network interface
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - interface
+              properties:
+                interface:
+                  type: string
+                  description: Network interface name
+                  example: "wlan0"
+      responses:
+        '200':
+          description: Network interface brought down successfully
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Internal server error
+
+  /network/remove:
+    post:
+      summary: Remove stored connection profile
+      description: Removes the stored NetworkManager connection profile
+      responses:
+        '200':
+          description: Connection profile removed successfully
+        '500':
+          description: Internal server error
