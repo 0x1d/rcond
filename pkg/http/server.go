@@ -58,6 +58,8 @@ func (s *Server) RegisterRoutes() {
 	s.router.HandleFunc("/network/remove", s.verifyToken(HandleNetworkRemove)).Methods(http.MethodPost)
 	s.router.HandleFunc("/hostname", s.verifyToken(HandleGetHostname)).Methods(http.MethodGet)
 	s.router.HandleFunc("/hostname", s.verifyToken(HandleSetHostname)).Methods(http.MethodPost)
+	s.router.HandleFunc("/authorized-key", s.verifyToken(HandleAddAuthorizedKey)).Methods(http.MethodPost)
+	s.router.HandleFunc("/authorized-key", s.verifyToken(HandleRemoveAuthorizedKey)).Methods(http.MethodDelete)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {

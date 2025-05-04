@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/0x1d/rcond/pkg/network"
+	"github.com/0x1d/rcond/pkg/user"
 )
 
 const (
@@ -102,6 +103,54 @@ func HandleSetHostname(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := network.SetHostname(req.Hostname); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func HandleAddAuthorizedKey(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		User   string `json:"user"`
+		PubKey string `json:"pubkey"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := user.AddAuthorizedKey(req.User, req.PubKey); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func HandleRemoveAuthorizedKey(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		User   string `json:"user"`
+		PubKey string `json:"pubkey"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := user.RemoveAuthorizedKey(req.User, req.PubKey); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

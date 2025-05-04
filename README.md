@@ -1,14 +1,9 @@
 # rcond
 
-A simple daemon to manage 
+A simple daemon and REST API to manage:
 - network connections through NetworkManager's D-Bus interface
 - system hostname through the hostname1 service
-
-It provides a REST API to:
-- Create and activate WiFi connections
-- Deactivate WiFi connections 
-- Remove stored connection profiles
-- Get and set the system hostname
+- authorized SSH keys through the user's authorized_keys file
 
 ## Build and Run
 
@@ -31,6 +26,8 @@ The full API specification can be found in [api/rcond.yaml](api/rcond.yaml).
 | POST | `/network/remove` | Remove the stored connection profile |
 | GET | `/hostname` | Get the hostname |
 | POST | `/hostname` | Set the hostname |
+| POST | `/authorized-key` | Add an authorized SSH key |
+| DELETE | `/authorized-key` | Remove an authorized SSH key |
 
 ### Response Codes
 
@@ -92,4 +89,28 @@ curl -v -X POST http://localhost:8080/hostname \
   -d '{
     "hostname": "MyHostname"
   }'
+```
+
+### Add an authorized SSH key
+
+```bash
+curl -v -X POST http://localhost:8080/authorized-key \
+  -H "Content-Type: application/json" \
+  -H "X-API-Token: 1234567890" \
+  -d '{
+    "user": "pi",
+    "pubkey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC1234567890"
+  }'
+```
+
+### Remove an authorized SSH key
+
+```bash
+curl -v -X DELETE http://localhost:8080/authorized-key \
+  -H "Content-Type: application/json" \
+  -H "X-API-Token: 1234567890" \
+  -d '{
+    "user": "pi",
+    "pubkey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC1234567890"
+    }'
 ```

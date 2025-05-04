@@ -154,3 +154,65 @@ paths:
           description: Unauthorized - invalid or missing API token
         '500':
           description: Internal server error
+  /authorized-key:
+    post:
+      summary: Add SSH authorized key
+      description: Adds an SSH public key to a user's authorized_keys file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user
+                - pubkey
+              properties:
+                user:
+                  type: string
+                  description: Username to add key for
+                  example: "pi"
+                pubkey:
+                  type: string
+                  description: SSH public key to add
+                  example: "ssh-rsa AAAAB3NzaC1yc2E... user@host"
+      responses:
+        '200':
+          description: Key added successfully
+        '400':
+          description: Invalid request payload or SSH key format
+        '401':
+          description: Unauthorized - invalid or missing API token
+        '500':
+          description: Internal server error
+    delete:
+      summary: Remove SSH authorized key
+      description: Removes an SSH public key from a user's authorized_keys file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user
+                - pubkey
+              properties:
+                user:
+                  type: string
+                  description: Username to remove key for
+                  example: "pi"
+                pubkey:
+                  type: string
+                  description: SSH public key to remove
+                  example: "ssh-rsa AAAAB3NzaC1yc2E... user@host"
+      responses:
+        '200':
+          description: Key removed successfully
+        '400':
+          description: Invalid request payload or SSH key format
+        '401':
+          description: Unauthorized - invalid or missing API token
+        '500':
+          description: Internal server error
+
