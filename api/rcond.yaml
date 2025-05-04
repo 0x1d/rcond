@@ -15,6 +15,14 @@ components:
       in: header
       name: X-API-Token
       description: API token for authentication
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "some error message"
 
 security:
   - ApiKeyAuth: []
@@ -36,6 +44,12 @@ paths:
                   status:
                     type: string
                     example: "healthy"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /network/ap:
     post:
@@ -78,10 +92,22 @@ paths:
                     example: "7d706027-727c-4d4c-a816-f0e1b99db8ab"
         '400':
           description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /network/interface/{interface}:
     put:
@@ -111,12 +137,32 @@ paths:
       responses:
         '200':
           description: Network interface brought up successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
         '400':
           description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       summary: Deactivate network connection
       description: Deactivates the specified network connection
@@ -131,12 +177,32 @@ paths:
       responses:
         '200':
           description: Network interface brought down successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
         '400':
           description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /network/connection/{uuid}:
     delete:
@@ -153,12 +219,32 @@ paths:
       responses:
         '200':
           description: Connection profile removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
         '400':
           description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /hostname:
     get:
@@ -168,15 +254,26 @@ paths:
         '200':
           description: Hostname retrieved successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                description: Current hostname
-                example: "MyHostname"
+                type: object
+                properties:
+                  hostname:
+                    type: string
+                    description: Current hostname
+                    example: "MyHostname"
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       summary: Set system hostname
       description: Sets a new system hostname
@@ -196,12 +293,32 @@ paths:
       responses:
         '200':
           description: Hostname set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
         '400':
           description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /users/{user}/keys:
     post:
@@ -232,17 +349,32 @@ paths:
         '200':
           description: Key added successfully
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                description: Fingerprint of the added key
-                example: "SHA256:abcdef1234567890..."
+                type: object
+                properties:
+                  fingerprint:
+                    type: string
+                    description: Fingerprint of the added key
+                    example: "SHA256:abcdef1234567890..."
         '400':
           description: Invalid request payload or SSH key format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /users/{user}/keys/{fingerprint}:
     delete:
@@ -261,15 +393,34 @@ paths:
           required: true
           schema:
             type: string
-            format: string
           description: URL-safe Base64 encoded fingerprint of the key to remove
           example: "U0hBMjU2OmFiY2RlZjEyMzQ1Njc4OTAuLi4="
       responses:
         '200':
           description: Key removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
         '400':
           description: Invalid request payload or fingerprint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
