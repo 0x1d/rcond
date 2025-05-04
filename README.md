@@ -16,6 +16,10 @@ make run
 
 The full API specification can be found in [api/rcond.yaml](api/rcond.yaml).
 
+### Authentication
+
+All endpoints except `/health` require authentication via an API token passed in the `X-API-Token` header. The token is configured via the `RCOND_API_TOKEN` environment variable when starting the daemon.
+
 ### Endpoints
 
 | Method | Path | Description |
