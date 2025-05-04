@@ -1,62 +1,107 @@
 package http
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/0x1d/rcond/pkg/network"
 	"github.com/0x1d/rcond/pkg/user"
+	"github.com/gorilla/mux"
 )
 
 const (
 	NETWORK_CONNECTION_UUID = "7d706027-727c-4d4c-a816-f0e1b99db8ab"
 )
 
-func HandleNetworkUp(w http.ResponseWriter, r *http.Request) {
+type configureAPRequest struct {
+	Interface string `json:"interface"`
+	SSID      string `json:"ssid"`
+	Password  string `json:"password"`
+}
+
+type networkUpRequest struct {
+	UUID string `json:"uuid"`
+}
+
+type setHostnameRequest struct {
+	Hostname string `json:"hostname"`
+}
+
+type authorizedKeyRequest struct {
+	User   string `json:"user"`
+	PubKey string `json:"pubkey"`
+}
+
+func HandleConfigureAP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req struct {
-		Interface string `json:"interface"`
-		SSID      string `json:"ssid"`
-		Password  string `json:"password"`
-	}
-
+	var req configureAPRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("Bringing up network interface %s with SSID %s", req.Interface, req.SSID)
-	if err := network.Up(req.Interface, req.SSID, req.Password, NETWORK_CONNECTION_UUID); err != nil {
-		log.Printf("Failed to bring up network interface %s: %v", req.Interface, err)
+	log.Printf("Configuring access point on interface %s", req.Interface)
+	uuid, err := network.ConfigureAP(req.Interface, req.SSID, req.Password)
+	if err != nil {
+		log.Printf("Failed to configure access point on interface %s: %v", req.Interface, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Successfully brought up network interface %s", req.Interface)
+	log.Printf("Successfully configured access point on interface %s with UUID %s", req.Interface, uuid)
+
+	resp := struct {
+		UUID string `json:"uuid"`
+	}{
+		UUID: uuid,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("Failed to encode response: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+func HandleNetworkUp(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req networkUpRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	vars := mux.Vars(r)
+	iface := vars["interface"]
+
+	log.Printf("Bringing up network interface %s with UUID %s", iface, req.UUID)
+	if err := network.Up(iface, req.UUID); err != nil {
+		log.Printf("Failed to bring up network interface %s: %v", iface, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Successfully brought up network interface %s", iface)
 
 	w.WriteHeader(http.StatusOK)
 }
 
 func HandleNetworkDown(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req struct {
-		Interface string `json:"interface"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := network.Down(req.Interface); err != nil {
+	vars := mux.Vars(r)
+	iface := vars["interface"]
+	if err := network.Down(iface); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -65,12 +110,14 @@ func HandleNetworkDown(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleNetworkRemove(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if err := network.Remove(NETWORK_CONNECTION_UUID); err != nil {
+	vars := mux.Vars(r)
+	uuid := vars["uuid"]
+	if err := network.Remove(uuid); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -93,10 +140,7 @@ func HandleSetHostname(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req struct {
-		Hostname string `json:"hostname"`
-	}
-
+	var req setHostnameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -116,22 +160,21 @@ func HandleAddAuthorizedKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req struct {
-		User   string `json:"user"`
-		PubKey string `json:"pubkey"`
-	}
-
+	var req authorizedKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	vars := mux.Vars(r)
+	username := vars["user"]
 
-	if err := user.AddAuthorizedKey(req.User, req.PubKey); err != nil {
+	fingerprint, err := user.AddAuthorizedKey(username, req.PubKey)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fingerprint))
 }
 
 func HandleRemoveAuthorizedKey(w http.ResponseWriter, r *http.Request) {
@@ -140,17 +183,26 @@ func HandleRemoveAuthorizedKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req struct {
-		User   string `json:"user"`
-		PubKey string `json:"pubkey"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	vars := mux.Vars(r)
+	fingerprint := vars["fingerprint"]
+	if fingerprint == "" {
+		http.Error(w, "fingerprint parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	if err := user.RemoveAuthorizedKey(req.User, req.PubKey); err != nil {
+	username := vars["user"]
+	if username == "" {
+		http.Error(w, "user parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	fingerprintBytes, err := base64.RawURLEncoding.DecodeString(fingerprint)
+	if err != nil {
+		http.Error(w, "invalid fingerprint base64", http.StatusBadRequest)
+		return
+	}
+
+	if err := user.RemoveAuthorizedKey(username, string(fingerprintBytes)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

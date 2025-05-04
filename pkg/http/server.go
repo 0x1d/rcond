@@ -53,13 +53,14 @@ func (s *Server) verifyToken(next http.HandlerFunc) http.HandlerFunc {
 
 func (s *Server) RegisterRoutes() {
 	s.router.HandleFunc("/health", s.healthHandler).Methods(http.MethodGet)
-	s.router.HandleFunc("/network/up", s.verifyToken(HandleNetworkUp)).Methods(http.MethodPost)
-	s.router.HandleFunc("/network/down", s.verifyToken(HandleNetworkDown)).Methods(http.MethodPost)
-	s.router.HandleFunc("/network/remove", s.verifyToken(HandleNetworkRemove)).Methods(http.MethodPost)
+	s.router.HandleFunc("/network/ap", s.verifyToken(HandleConfigureAP)).Methods(http.MethodPost)
+	s.router.HandleFunc("/network/interface/{interface}", s.verifyToken(HandleNetworkUp)).Methods(http.MethodPut)
+	s.router.HandleFunc("/network/interface/{interface}", s.verifyToken(HandleNetworkDown)).Methods(http.MethodDelete)
+	s.router.HandleFunc("/network/connection/{uuid}", s.verifyToken(HandleNetworkRemove)).Methods(http.MethodDelete)
 	s.router.HandleFunc("/hostname", s.verifyToken(HandleGetHostname)).Methods(http.MethodGet)
 	s.router.HandleFunc("/hostname", s.verifyToken(HandleSetHostname)).Methods(http.MethodPost)
-	s.router.HandleFunc("/authorized-key", s.verifyToken(HandleAddAuthorizedKey)).Methods(http.MethodPost)
-	s.router.HandleFunc("/authorized-key", s.verifyToken(HandleRemoveAuthorizedKey)).Methods(http.MethodDelete)
+	s.router.HandleFunc("/users/{user}/keys", s.verifyToken(HandleAddAuthorizedKey)).Methods(http.MethodPost)
+	s.router.HandleFunc("/users/{user}/keys/{fingerprint}", s.verifyToken(HandleRemoveAuthorizedKey)).Methods(http.MethodDelete)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {

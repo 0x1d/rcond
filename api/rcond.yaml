@@ -24,6 +24,7 @@ paths:
     get:
       summary: Health check endpoint
       description: Returns the health status of the service
+      security: []
       responses:
         '200':
           description: Service is healthy
@@ -36,10 +37,10 @@ paths:
                     type: string
                     example: "healthy"
 
-  /network/up:
+  /network/ap:
     post:
-      summary: Create and activate WiFi access point
-      description: Creates and activates a WiFi access point on the specified interface
+      summary: Configure WiFi access point
+      description: Creates a WiFi access point configuration on the specified interface
       requestBody:
         required: true
         content:
@@ -65,7 +66,16 @@ paths:
                   example: "SuperSecretPassword"
       responses:
         '200':
-          description: Network interface brought up successfully
+          description: Access point configured successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    description: UUID of the created connection profile
+                    example: "7d706027-727c-4d4c-a816-f0e1b99db8ab"
         '400':
           description: Invalid request payload
         '401':
@@ -73,10 +83,18 @@ paths:
         '500':
           description: Internal server error
 
-  /network/down:
-    post:
-      summary: Deactivate network interface
-      description: Deactivates the specified network interface
+  /network/interface/{interface}:
+    put:
+      summary: Activate network connection
+      description: Activates an existing network connection on the specified interface
+      parameters:
+        - name: interface
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Network interface name
+          example: "wlan0"
       requestBody:
         required: true
         content:
@@ -84,12 +102,32 @@ paths:
             schema:
               type: object
               required:
-                - interface
+                - uuid
               properties:
-                interface:
+                uuid:
                   type: string
-                  description: Network interface name
-                  example: "wlan0"
+                  description: UUID of the connection profile
+                  example: "7d706027-727c-4d4c-a816-f0e1b99db8ab"
+      responses:
+        '200':
+          description: Network interface brought up successfully
+        '400':
+          description: Invalid request payload
+        '401':
+          description: Unauthorized - invalid or missing API token
+        '500':
+          description: Internal server error
+    delete:
+      summary: Deactivate network connection
+      description: Deactivates the specified network connection
+      parameters:
+        - name: interface
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Network interface name
+          example: "wlan0"
       responses:
         '200':
           description: Network interface brought down successfully
@@ -100,13 +138,23 @@ paths:
         '500':
           description: Internal server error
 
-  /network/remove:
-    post:
+  /network/connection/{uuid}:
+    delete:
       summary: Remove stored connection profile
       description: Removes the stored NetworkManager connection profile
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: UUID of the connection profile to remove
+          example: "7d706027-727c-4d4c-a816-f0e1b99db8ab"
       responses:
         '200':
           description: Connection profile removed successfully
+        '400':
+          description: Invalid request payload
         '401':
           description: Unauthorized - invalid or missing API token
         '500':
@@ -154,10 +202,19 @@ paths:
           description: Unauthorized - invalid or missing API token
         '500':
           description: Internal server error
-  /authorized-key:
+
+  /users/{user}/keys:
     post:
       summary: Add SSH authorized key
       description: Adds an SSH public key to a user's authorized_keys file
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username to add key for
+          example: "pi"
       requestBody:
         required: true
         content:
@@ -165,13 +222,8 @@ paths:
             schema:
               type: object
               required:
-                - user
                 - pubkey
               properties:
-                user:
-                  type: string
-                  description: Username to add key for
-                  example: "pi"
                 pubkey:
                   type: string
                   description: SSH public key to add
@@ -179,36 +231,12 @@ paths:
       responses:
         '200':
           description: Key added successfully
-        '400':
-          description: Invalid request payload or SSH key format
-        '401':
-          description: Unauthorized - invalid or missing API token
-        '500':
-          description: Internal server error
-    delete:
-      summary: Remove SSH authorized key
-      description: Removes an SSH public key from a user's authorized_keys file
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - user
-                - pubkey
-              properties:
-                user:
-                  type: string
-                  description: Username to remove key for
-                  example: "pi"
-                pubkey:
-                  type: string
-                  description: SSH public key to remove
-                  example: "ssh-rsa AAAAB3NzaC1yc2E... user@host"
-      responses:
-        '200':
-          description: Key removed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Fingerprint of the added key
+                example: "SHA256:abcdef1234567890..."
         '400':
           description: Invalid request payload or SSH key format
         '401':
@@ -216,3 +244,32 @@ paths:
         '500':
           description: Internal server error
 
+  /users/{user}/keys/{fingerprint}:
+    delete:
+      summary: Remove SSH authorized key
+      description: Removes an SSH public key from a user's authorized_keys file
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username to remove key for
+          example: "pi"
+        - name: fingerprint
+          in: path
+          required: true
+          schema:
+            type: string
+            format: string
+          description: URL-safe Base64 encoded fingerprint of the key to remove
+          example: "U0hBMjU2OmFiY2RlZjEyMzQ1Njc4OTAuLi4="
+      responses:
+        '200':
+          description: Key removed successfully
+        '400':
+          description: Invalid request payload or fingerprint
+        '401':
+          description: Unauthorized - invalid or missing API token
+        '500':
+          description: Internal server error
