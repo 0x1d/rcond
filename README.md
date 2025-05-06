@@ -15,7 +15,7 @@ A simple daemon and REST API designed to simplify the management of various syst
 
 ## Installation
 
-In order to install `rcond` as a systemd service, you need to specify the target architecture and then run the build and install make targets.
+In order to install `rcond` as a systemd service, you need to specify the target architecture and then run the install make target.
 
 ```sh
 export ARCH=arm64
