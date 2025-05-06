@@ -10,7 +10,7 @@ build:
 	mkdir -p bin
 	env GOOS=linux GOARCH=${ARCH} go build -o bin/rcond-${ARCH} ./cmd/rcond/main.go
 
-install:
+install: build
 	sudo mkdir -p /etc/rcond
 	sudo mkdir -p /var/rcond
 	sudo cp config/rcond.yaml /etc/rcond/config.yaml
@@ -29,7 +29,7 @@ uninstall:
 	sudo rm -rf /usr/local/bin/rcond
 	sudo rm -rf /etc/systemd/system/rcond.service
 
-run:
+run: build
 	bin/rcond-${ARCH} -config config/rcond.yaml
 
 dev:

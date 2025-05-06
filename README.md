@@ -1,9 +1,9 @@
 # rcond
 
-A simple daemon and REST API to manage:
-- network connections through NetworkManager's D-Bus interface
-- system hostname through the hostname1 service
-- authorized SSH keys through the user's authorized_keys file
+A simple daemon and REST API designed to simplify the management of various system components, including:
+- Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure and monitor network connections
+- System hostname: Interacting with the hostname1 service to dynamically update the system's hostname
+- Authorized SSH keys: Directly managing the user's authorized_keys file to securely add, remove, or modify authorized SSH keys
 
 ## Requirements
 
@@ -15,22 +15,26 @@ A simple daemon and REST API to manage:
 
 ## Installation
 
-In order to install `rcond`as a systemd service, you need to specify the target architecture and then run the build and install make targets.
+In order to install `rcond` as a systemd service, you need to specify the target architecture and then run the build and install make targets.
 
 ```sh
 export ARCH=arm64
-make build
 make install
 ```
 
-## Build and Run
+## Run
 
-```bash
-make build
+The run target will build the binary for target architecture and runs it using the default configuration in `config/rcond.yaml`
+
+```sh
 make run
 ```
 
 ## Develop
+
+The dev target will run the main.go directly with environment variable configuration:
+- RCOND_ADDR = 127.0.0.1:8080
+- RCOND_API_TOKEN = 1234567890
 
 ```sh
 make dev
