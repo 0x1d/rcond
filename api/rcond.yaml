@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: rcond API
-  description: API for managing network connections through NetworkManager
+  description: API for managing stuff on a Linux system
   version: 1.0.0
 
 servers:

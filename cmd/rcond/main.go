@@ -21,7 +21,10 @@ func usage() {
 
 func main() {
 
-	addr := "0.0.0.0:8080"
+	addr := os.Getenv("RCOND_ADDR")
+	if addr == "" {
+		addr = "0.0.0.0:8080"
+	}
 	if len(os.Args) > 1 {
 		addr = os.Args[1]
 	}
