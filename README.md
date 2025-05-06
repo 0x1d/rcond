@@ -13,12 +13,50 @@ A simple daemon and REST API to manage:
 - systemd
 - Linux operating system
 
+## Installation
+
+In order to install `rcond`as a systemd service, you need to specify the target architecture and then run the build and install make targets.
+
+```sh
+export ARCH=arm64
+make build
+make install
+```
+
 ## Build and Run
 
 ```bash
 make build
 make run
 ```
+
+## Develop
+
+```sh
+make dev
+```
+
+## Configuration
+
+### File
+
+The default config file location is `/etc/rcond/config.yaml`.  
+It can be overwritten by environment variables and flags.  
+An full example configuration with comments can be found in `config/rcond.yaml`
+
+Example configuration:
+```yaml
+rcond:
+  addr: 0.0.0.0:8080
+  api_token: 1234567890
+```
+
+### Environment Variables
+
+| Environment Variable | Description                             | Default       |
+|----------------------|-----------------------------------------|---------------|
+| RCOND_ADDR           | Address to bind the HTTP server to.     | 0.0.0.0:8080  |
+| RCOND_API_TOKEN      | API token to use for authentication.    | N/A           |
 
 ## API
 
@@ -50,27 +88,6 @@ All endpoints except `/health` require authentication via an API token passed in
 
 ### Request/Response Format
 All endpoints use JSON for request and response payloads.
-
-## Configuration
-
-### File
-
-The default config file location is `/etc/rcond/config.yaml`.  
-It can be overwritten by environment variables and flags.  
-
-Example configuration:
-```yaml
-rcond:
-  addr: 0.0.0.0:8080
-  api_token: 1234567890
-```
-
-### Environment Variables
-
-| Environment Variable | Description                             | Default       |
-|----------------------|-----------------------------------------|---------------|
-| RCOND_ADDR           | Address to bind the HTTP server to.     | 0.0.0.0:8080  |
-| RCOND_API_TOKEN      | API token to use for authentication.    | N/A           |
 
 ## Examples
 

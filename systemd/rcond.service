@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/path/to/your/rcond
-ExecStart=/path/to/your/rcond/bin/rcond-${ARCH} ${ADDR}
+WorkingDirectory=/var/rcond
+ExecStart=/usr/local/bin/rcond
 Restart=on-failure
 
 [Install]

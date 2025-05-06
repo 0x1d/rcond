@@ -10,8 +10,18 @@ build:
 	mkdir -p bin
 	env GOOS=linux GOARCH=${ARCH} go build -o bin/rcond-${ARCH} ./cmd/rcond/main.go
 
+install:
+	sudo mkdir -p /etc/rcond
+	sudo mkdir -p /var/rcond
+	sudo cp config/rcond.yaml /etc/rcond/config.yaml
+	sudo cp bin/rcond-${ARCH} /usr/local/bin/rcond
+	sudo cp systemd/rcond.service /etc/systemd/system/rcond.service
+	sudo systemctl daemon-reload
+	sudo systemctl enable rcond
+	sudo systemctl start rcond
+
 run:
-	bin/rcond-${ARCH} -config config.yaml
+	bin/rcond-${ARCH} -config config/rcond.yaml
 
 dev:
 	RCOND_ADDR=127.0.0.1:8080 \

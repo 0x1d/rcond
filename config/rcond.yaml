@@ -1,0 +1,5 @@
+rcond:
+  # Address to bind the HTTP server to
+  addr: 0.0.0.0:8080
+  # API token to use for authentication
+  api_token: 1234567890
