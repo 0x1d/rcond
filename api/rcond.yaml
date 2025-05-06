@@ -7,7 +7,9 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local development server
-
+  - url: http://rpi-test:8080
+    description: Raspberry Pi test server
+ 
 components:
   securitySchemes:
     ApiKeyAuth:

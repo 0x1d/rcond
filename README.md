@@ -5,6 +5,13 @@ A simple daemon and REST API to manage:
 - system hostname through the hostname1 service
 - authorized SSH keys through the user's authorized_keys file
 
+## Requirements
+- Make
+- Go 1.19 or later
+- NetworkManager
+- systemd
+- Linux operating system
+
 ## Build and Run
 
 ```bash
@@ -49,3 +56,46 @@ All endpoints use JSON for request and response payloads.
 |----------------------|-----------------------------------------|---------------|
 | RCOND_ADDR           | Address to bind the HTTP server to.     | 0.0.0.0:8080  |
 | RCOND_API_TOKEN      | API token to use for authentication.    | N/A           |
+
+## Examples
+
+### Setup an Access Point
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Example script to create and activate a WiFi access point
+# Requires:
+#   - RCOND_ADDR       (default: http://0.0.0.0:8080)
+#   - RCOND_API_TOKEN  (your API token)
+
+API_URL="${RCOND_ADDR:-http://0.0.0.0:8080}"
+API_TOKEN="${RCOND_API_TOKEN:-your_api_token}"
+INTERFACE="wlan0"
+SSID="MyAccessPoint"
+PASSWORD="StrongPassword"
+
+echo "Creating access point '$SSID' on interface '$INTERFACE'..."
+ap_response=$(curl -sSf -X POST "$API_URL/network/ap" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Token: $API_TOKEN" \
+  -d '{
+    "interface": "'"$INTERFACE"'",
+    "ssid": "'"$SSID"'",
+    "password": "'"$PASSWORD"'"
+  }')
+
+# Extract the UUID from the JSON response
+AP_UUID=$(echo "$ap_response" | jq -r '.uuid')
+
+echo "Activating connection with UUID '$AP_UUID' on interface '$INTERFACE'..."
+curl -sSf -X PUT "$API_URL/network/interface/$INTERFACE" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Token: $API_TOKEN" \
+  -d '{
+    "uuid": "'"$AP_UUID"'"
+  }'
+
+echo "Access point '$SSID' is now up and running on $INTERFACE."
+```

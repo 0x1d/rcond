@@ -17,4 +17,4 @@ dev:
 	RCOND_API_TOKEN=1234567890 go run cmd/rcond/main.go
 
 upload:
-	scp rcond-${ARCH} pi@rpi-40ac:/home/pi/rcond
+	scp bin/rcond-${ARCH} pi@rpi-test:/home/pi/rcond
