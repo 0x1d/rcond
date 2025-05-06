@@ -1,14 +1,14 @@
 # rcond
 
 A simple daemon and REST API designed to simplify the management of various system components, including:
-- Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure and monitor network connections
+- Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure network connections
 - System hostname: Interacting with the hostname1 service to dynamically update the system's hostname
 - Authorized SSH keys: Directly managing the user's authorized_keys file to securely add, remove, or modify authorized SSH keys
 
 ## Requirements
 
 - Make
-- Go 1.19 or later
+- Go
 - NetworkManager
 - systemd
 - Linux operating system
