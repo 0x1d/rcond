@@ -6,6 +6,7 @@ A simple daemon and REST API to manage:
 - authorized SSH keys through the user's authorized_keys file
 
 ## Requirements
+
 - Make
 - Go 1.19 or later
 - NetworkManager
@@ -49,6 +50,20 @@ All endpoints except `/health` require authentication via an API token passed in
 
 ### Request/Response Format
 All endpoints use JSON for request and response payloads.
+
+## Configuration
+
+### File
+
+The default config file location is `/etc/rcond/config.yaml`.  
+It can be overwritten by environment variables and flags.  
+
+Example configuration:
+```yaml
+rcond:
+  addr: 0.0.0.0:8080
+  api_token: 1234567890
+```
 
 ### Environment Variables
 

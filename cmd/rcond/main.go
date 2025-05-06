@@ -3,41 +3,105 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/0x1d/rcond/pkg/config"
 	http "github.com/0x1d/rcond/pkg/http"
 )
 
-const (
-	NETWORK_CONNECTION_UUID = "7d706027-727c-4d4c-a816-f0e1b99db8ab"
-)
-
 func usage() {
-	fmt.Printf("Usage: %s <address>\n", os.Args[0])
-	os.Exit(0)
+	fmt.Println("Usage: rcond <flags>")
+	flag.PrintDefaults()
 }
 
 func main() {
-
-	addr := os.Getenv("RCOND_ADDR")
-	if addr == "" {
-		addr = "0.0.0.0:8080"
-	}
-	if len(os.Args) > 1 {
-		addr = os.Args[1]
-	}
-	apiToken := os.Getenv("RCOND_API_TOKEN")
-	if apiToken == "" {
-		log.Fatal("RCOND_API_TOKEN environment variable not set")
+	appConfig, err := loadConfig()
+	if err != nil {
+		usage()
+		fmt.Printf("\nFailed to load config: %v\n", err)
+		os.Exit(1)
 	}
 
-	srv := http.NewServer(addr, apiToken)
+	srv := http.NewServer(appConfig)
 	srv.RegisterRoutes()
 
-	log.Printf("Starting server on %s", addr)
+	log.Printf("Starting server on %s", appConfig.Rcond.Addr)
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func loadConfig() (*config.Config, error) {
+	configPath := "/etc/rcond/config.yaml"
+	appConfig := &config.Config{}
+	help := false
+
+	flag.StringVar(&configPath, "config", configPath, "Path to the configuration file")
+	flag.StringVar(&appConfig.Rcond.Addr, "addr", "", "Address to bind the HTTP server to")
+	flag.StringVar(&appConfig.Rcond.ApiToken, "token", "", "API token to use for authentication")
+	flag.BoolVar(&help, "help", false, "Show help")
+	flag.Parse()
+
+	if help {
+		usage()
+		os.Exit(0)
+	}
+
+	// Load config from file
+	if _, err := os.Stat(configPath); !os.IsNotExist(err) {
+		configFile, err := config.LoadConfig(configPath)
+		if err != nil {
+			return nil, err
+		}
+		appConfig = configFile
+	}
+
+	// Override config values from environment variables and flags
+	overrideConfigValuesFromEnv(map[string]*string{
+		"RCOND_ADDR":      &appConfig.Rcond.Addr,
+		"RCOND_API_TOKEN": &appConfig.Rcond.ApiToken,
+	})
+
+	overrideConfigValuesFromFlag(map[string]*string{
+		"addr":  &appConfig.Rcond.Addr,
+		"token": &appConfig.Rcond.ApiToken,
+	})
+
+	// Validate required fields
+	if err := validateRequiredFields(map[string]*string{
+		"addr":  &appConfig.Rcond.Addr,
+		"token": &appConfig.Rcond.ApiToken,
+	}); err != nil {
+		return nil, err
+	}
+
+	return appConfig, nil
+}
+
+func overrideConfigValuesFromEnv(envMap map[string]*string) {
+	for varName, configValue := range envMap {
+		if envValue, ok := os.LookupEnv(varName); ok {
+			*configValue = envValue
+		}
+	}
+}
+
+func overrideConfigValuesFromFlag(flagMap map[string]*string) {
+	for flagName, configValue := range flagMap {
+		if flagValue := flag.Lookup(flagName).Value.String(); flagValue != "" {
+			*configValue = flagValue
+		}
+	}
+}
+
+func validateRequiredFields(fields map[string]*string) error {
+	for name, value := range fields {
+		if *value == "" {
+			return fmt.Errorf("%s is required", name)
+		}
+	}
+	return nil
 }

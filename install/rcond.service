@@ -1,0 +1,13 @@
+[Unit]
+Description=rcond service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/path/to/your/rcond
+ExecStart=/path/to/your/rcond/bin/rcond-${ARCH} ${ADDR}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

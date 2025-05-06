@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/0x1d/rcond/pkg/config"
 	"github.com/gorilla/mux"
 )
 
@@ -15,11 +16,15 @@ type Server struct {
 	apiToken string
 }
 
-func NewServer(addr string, apiToken string) *Server {
+func NewServer(cfg *config.Config) *Server {
+	if cfg.Rcond.Addr == "" || cfg.Rcond.ApiToken == "" {
+		panic("addr or api_token is not set")
+	}
+
 	router := mux.NewRouter()
 
 	srv := &http.Server{
-		Addr:         addr,
+		Addr:         cfg.Rcond.Addr,
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -28,7 +33,7 @@ func NewServer(addr string, apiToken string) *Server {
 	return &Server{
 		router:   router,
 		srv:      srv,
-		apiToken: apiToken,
+		apiToken: cfg.Rcond.ApiToken,
 	}
 }
 
