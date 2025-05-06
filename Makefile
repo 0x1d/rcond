@@ -20,6 +20,15 @@ install:
 	sudo systemctl enable rcond
 	sudo systemctl start rcond
 
+uninstall:
+	sudo systemctl stop rcond
+	sudo systemctl disable rcond
+	sudo systemctl remove rcond
+	sudo rm -rf /etc/rcond
+	sudo rm -rf /var/rcond
+	sudo rm -rf /usr/local/bin/rcond
+	sudo rm -rf /etc/systemd/system/rcond.service
+
 run:
 	bin/rcond-${ARCH} -config config/rcond.yaml
 
