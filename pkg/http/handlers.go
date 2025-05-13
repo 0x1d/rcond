@@ -6,15 +6,23 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/0x1d/rcond/pkg/network"
+	network "github.com/0x1d/rcond/pkg/network"
 	"github.com/0x1d/rcond/pkg/user"
 	"github.com/gorilla/mux"
 )
 
 type configureAPRequest struct {
-	Interface string `json:"interface"`
-	SSID      string `json:"ssid"`
-	Password  string `json:"password"`
+	Interface   string `json:"interface"`
+	SSID        string `json:"ssid"`
+	Password    string `json:"password"`
+	Autoconnect bool   `json:"autoconnect"`
+}
+
+type configureSTARequest struct {
+	Interface   string `json:"interface"`
+	SSID        string `json:"ssid"`
+	Password    string `json:"password"`
+	Autoconnect bool   `json:"autoconnect"`
 }
 
 type networkUpRequest struct {
@@ -40,6 +48,30 @@ func writeError(w http.ResponseWriter, message string, code int) {
 	json.NewEncoder(w).Encode(errorResponse{Error: message})
 }
 
+func HandleConfigureSTA(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req configureSTARequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Configuring station on interface %s", req.Interface)
+	uuid, err := network.ConfigureSTA(req.Interface, req.SSID, req.Password, req.Autoconnect)
+	if err != nil {
+		log.Printf("Failed to configure station on interface %s: %v", req.Interface, err)
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"uuid": uuid})
+}
+
 func HandleConfigureAP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -53,7 +85,7 @@ func HandleConfigureAP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Configuring access point on interface %s", req.Interface)
-	uuid, err := network.ConfigureAP(req.Interface, req.SSID, req.Password)
+	uuid, err := network.ConfigureAP(req.Interface, req.SSID, req.Password, req.Autoconnect)
 	if err != nil {
 		log.Printf("Failed to configure access point on interface %s: %v", req.Interface, err)
 		writeError(w, err.Error(), http.StatusInternalServerError)

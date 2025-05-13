@@ -2,7 +2,7 @@
 
 A simple daemon and REST API designed to simplify the management of various system components, including:
 - Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure network connections
-- System hostname: Interacting with the hostname1 service to dynamically update the system's hostname
+- System hostname: Dynamically update the system's hostname
 - Authorized SSH keys: Directly managing the user's authorized_keys file to securely add, remove, or modify authorized SSH keys
 
 ## Requirements
@@ -95,43 +95,34 @@ All endpoints use JSON for request and response payloads.
 
 ## Examples
 
-### Setup an Access Point
+### Connect to a WiFi Access Point
+
+This example will automatically connect to a WiFi access point with the given SSID and password on the interface "wlan0".
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Example script to create and activate a WiFi access point
-# Requires:
-#   - RCOND_ADDR       (default: http://0.0.0.0:8080)
-#   - RCOND_API_TOKEN  (your API token)
-
-API_URL="${RCOND_ADDR:-http://0.0.0.0:8080}"
-API_TOKEN="${RCOND_API_TOKEN:-your_api_token}"
-INTERFACE="wlan0"
-SSID="MyAccessPoint"
-PASSWORD="StrongPassword"
-
-echo "Creating access point '$SSID' on interface '$INTERFACE'..."
-ap_response=$(curl -sSf -X POST "$API_URL/network/ap" \
+curl -sSf -X POST "http://rpi-test:8080/network/sta" \
   -H "Content-Type: application/json" \
-  -H "X-API-Token: $API_TOKEN" \
+  -H "X-API-Token: 1234567890" \
   -d '{
-    "interface": "'"$INTERFACE"'",
-    "ssid": "'"$SSID"'",
-    "password": "'"$PASSWORD"'"
-  }')
-
-# Extract the UUID from the JSON response
-AP_UUID=$(echo "$ap_response" | jq -r '.uuid')
-
-echo "Activating connection with UUID '$AP_UUID' on interface '$INTERFACE'..."
-curl -sSf -X PUT "$API_URL/network/interface/$INTERFACE" \
-  -H "Content-Type: application/json" \
-  -H "X-API-Token: $API_TOKEN" \
-  -d '{
-    "uuid": "'"$AP_UUID"'"
+    "interface": "wlan0",
+    "ssid": "MyAccessPoint",
+    "password": "StrongPassword",
+    "autoconnect": true
   }'
+```
 
-echo "Access point '$SSID' is now up and running on $INTERFACE."
+### Setup an Access Point
+
+This example will create an access point on the interface "wlan0" with the given SSID and password.
+
+```bash
+curl -sSf -X POST "http://rpi-test:8080/network/ap" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Token: 1234567890" \
+  -d '{
+    "interface": "wlan0",
+    "ssid": "MyAccessPoint",
+    "password": "StrongPassword",
+    "autoconnect": true
+  }'
 ```

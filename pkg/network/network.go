@@ -31,13 +31,28 @@ type ConnectionConfig struct {
 	IPv6Method  string
 }
 
-// DefaultAPConfig returns a default access point configuration
-func DefaultAPConfig(uuid uuid.UUID, ssid string, password string) *ConnectionConfig {
+func DefaultSTAConfig(uuid uuid.UUID, ssid string, password string, autoconnect bool) *ConnectionConfig {
 	return &ConnectionConfig{
 		Type:        "802-11-wireless",
 		UUID:        uuid.String(),
 		ID:          ssid,
-		AutoConnect: true,
+		AutoConnect: autoconnect,
+		SSID:        ssid,
+		Mode:        "infrastructure",
+		KeyMgmt:     "wpa-psk",
+		PSK:         password,
+		IPv4Method:  "auto",
+		IPv6Method:  "ignore",
+	}
+}
+
+// DefaultAPConfig returns a default access point configuration
+func DefaultAPConfig(uuid uuid.UUID, ssid string, password string, autoconnect bool) *ConnectionConfig {
+	return &ConnectionConfig{
+		Type:        "802-11-wireless",
+		UUID:        uuid.String(),
+		ID:          ssid,
+		AutoConnect: autoconnect,
 		SSID:        ssid,
 		Mode:        "ap",
 		Band:        "bg",
@@ -219,8 +234,16 @@ func GetConnectionPath(conn *dbus.Conn, connUUID string) (dbus.ObjectPath, error
 // Takes a D-Bus connection, UUID string, SSID string, and password string as arguments.
 // Returns the D-Bus object path of the new connection profile.
 // Returns an error if the connection creation fails.
-func AddAccessPointConnection(conn *dbus.Conn, uuid uuid.UUID, ssid string, password string) (dbus.ObjectPath, error) {
-	return AddConnectionWithConfig(conn, DefaultAPConfig(uuid, ssid, password))
+func AddAccessPointConnection(conn *dbus.Conn, uuid uuid.UUID, ssid string, password string, autoconnect bool) (dbus.ObjectPath, error) {
+	return AddConnectionWithConfig(conn, DefaultAPConfig(uuid, ssid, password, autoconnect))
+}
+
+// AddStationConnection creates a new NetworkManager connection profile for a WiFi station (client).
+// Takes a D-Bus connection, UUID string, SSID string, and password string as arguments.
+// Returns the D-Bus object path of the new connection profile.
+// Returns an error if the connection creation fails.
+func AddStationConnection(conn *dbus.Conn, uuid uuid.UUID, ssid string, password string, autoconnect bool) (dbus.ObjectPath, error) {
+	return AddConnectionWithConfig(conn, DefaultSTAConfig(uuid, ssid, password, autoconnect))
 }
 
 // AddConnectionWithConfig creates a new NetworkManager connection profile with the given configuration.
@@ -233,6 +256,19 @@ func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.Objec
 		"/org/freedesktop/NetworkManager/Settings",
 	)
 
+	var wirelessMap map[string]dbus.Variant
+	if cfg.Mode == "ap" {
+		wirelessMap = map[string]dbus.Variant{
+			"mode":    dbus.MakeVariant(cfg.Mode),
+			"band":    dbus.MakeVariant(cfg.Band),
+			"channel": dbus.MakeVariant(cfg.Channel),
+		}
+	} else {
+		wirelessMap = map[string]dbus.Variant{
+			"ssid": dbus.MakeVariant([]byte(cfg.SSID)),
+		}
+	}
+
 	settingsMap := map[string]map[string]dbus.Variant{
 		"connection": {
 			"type":        dbus.MakeVariant(cfg.Type),
@@ -240,12 +276,7 @@ func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.Objec
 			"id":          dbus.MakeVariant(cfg.ID),
 			"autoconnect": dbus.MakeVariant(cfg.AutoConnect),
 		},
-		"802-11-wireless": {
-			"ssid":    dbus.MakeVariant([]byte(cfg.SSID)),
-			"mode":    dbus.MakeVariant(cfg.Mode),
-			"band":    dbus.MakeVariant(cfg.Band),
-			"channel": dbus.MakeVariant(cfg.Channel),
-		},
+		"802-11-wireless": wirelessMap,
 		"802-11-wireless-security": {
 			"key-mgmt": dbus.MakeVariant(cfg.KeyMgmt),
 			"psk":      dbus.MakeVariant(cfg.PSK),
@@ -318,15 +349,37 @@ func SetHostname(newHost string) error {
 	})
 }
 
+// ConfigureSTA connects to a WiFi access point with the specified settings.
+// It takes the interface name, SSID and password as arguments.
+// A new connection with a generated UUID will be created.
+// Returns the UUID of the created connection and any error that occurred.
+func ConfigureSTA(iface string, ssid string, password string, autoconnect bool) (string, error) {
+	uuid := uuid.New()
+
+	err := withDbus(func(conn *dbus.Conn) error {
+		_, err := AddStationConnection(conn, uuid, ssid, password, autoconnect)
+		if err != nil {
+			return fmt.Errorf("failed to create station connection: %v", err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return uuid.String(), nil
+}
+
 // ConfigureAP creates a WiFi access point connection with the specified settings.
 // It takes the interface name, SSID and password as arguments.
 // A new connection with a generated UUID will be created.
 // Returns the UUID of the created connection and any error that occurred.
-func ConfigureAP(iface string, ssid string, password string) (string, error) {
+func ConfigureAP(iface string, ssid string, password string, autoconnect bool) (string, error) {
 	uuid := uuid.New()
 
 	err := withDbus(func(conn *dbus.Conn) error {
-		_, err := AddAccessPointConnection(conn, uuid, ssid, password)
+		_, err := AddAccessPointConnection(conn, uuid, ssid, password, autoconnect)
 		if err != nil {
 			return fmt.Errorf("failed to create access point connection: %v", err)
 		}

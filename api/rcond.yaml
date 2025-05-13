@@ -52,7 +52,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /network/sta:
+    post:
+      summary: Configure WiFi station
+      description: Creates a WiFi station (client) configuration on the specified interface
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - interface
+                - ssid
+                - password
+              properties:
+                interface:
+                  type: string
+                  description: Network interface name
+                  example: "wlan0"
+                ssid:
+                  type: string
+                  description: WiFi network SSID
+                  example: "MyNetworkSSID"
+                password:
+                  type: string
+                  description: WiFi network password
+                  example: "SuperSecretPassword"
+                autoconnect:
+                  type: boolean
+                  description: Whether to automatically connect to the access point
+                  example: true
+      responses:
+        '200':
+          description: WiFi station configured successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    description: UUID of the created connection profile
+                    example: "7d706027-727c-4d4c-a816-f0e1b99db8ab"
+                  status:
+                    type: string
+                    description: Status of the operation
+                    example: "success"
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or missing API token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /network/ap:
     post:
       summary: Configure WiFi access point
@@ -80,6 +144,10 @@ paths:
                   type: string
                   description: WiFi network password
                   example: "SuperSecretPassword"
+                autoconnect:
+                  type: boolean
+                  description: Whether to automatically start the access point
+                  example: true
       responses:
         '200':
           description: Access point configured successfully

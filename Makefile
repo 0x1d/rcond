@@ -2,6 +2,8 @@ SHELL := bash
 ARCH ?= amd64
 ADDR ?= 0.0.0.0:8080
 
+default: build
+
 generate:
 	swagger generate server -f api/rcond.yaml -t api/
 	go mod tidy
@@ -37,4 +39,4 @@ dev:
 	go run cmd/rcond/main.go
 
 upload:
-	scp bin/rcond-${ARCH} pi@rpi-test:/home/pi/rcond
+	scp bin/rcond-${ARCH} pi@192.168.1.43:/home/pi/rcond
