@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	network "github.com/0x1d/rcond/pkg/network"
+	"github.com/0x1d/rcond/pkg/system"
 	"github.com/0x1d/rcond/pkg/user"
 	"github.com/gorilla/mux"
 )
@@ -249,6 +250,36 @@ func HandleRemoveAuthorizedKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := user.RemoveAuthorizedKey(username, string(fingerprintBytes)); err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+func HandleReboot(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := system.Restart(); err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+func HandleShutdown(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := system.Shutdown(); err != nil {
 		writeError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

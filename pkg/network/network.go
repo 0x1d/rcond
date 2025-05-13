@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/0x1d/rcond/pkg/system"
 	"github.com/godbus/dbus/v5"
 	"github.com/google/uuid"
 )
@@ -62,21 +63,6 @@ func DefaultAPConfig(uuid uuid.UUID, ssid string, password string, autoconnect b
 		IPv4Method:  "shared",
 		IPv6Method:  "ignore",
 	}
-}
-
-// withDbus executes the given function with a D-Bus system connection
-// and handles any connection errors
-func withDbus(fn func(*dbus.Conn) error) error {
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		log.Printf("Failed to connect to system bus: %v", err)
-		return err
-	}
-	if err := fn(conn); err != nil {
-		log.Print(err)
-		return err
-	}
-	return nil
 }
 
 // ActivateConnection activates a NetworkManager connection profile.
@@ -259,6 +245,7 @@ func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.Objec
 	var wirelessMap map[string]dbus.Variant
 	if cfg.Mode == "ap" {
 		wirelessMap = map[string]dbus.Variant{
+			"ssid":    dbus.MakeVariant([]byte(cfg.SSID)),
 			"mode":    dbus.MakeVariant(cfg.Mode),
 			"band":    dbus.MakeVariant(cfg.Band),
 			"channel": dbus.MakeVariant(cfg.Channel),
@@ -266,6 +253,7 @@ func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.Objec
 	} else {
 		wirelessMap = map[string]dbus.Variant{
 			"ssid": dbus.MakeVariant([]byte(cfg.SSID)),
+			"mode": dbus.MakeVariant(cfg.Mode),
 		}
 	}
 
@@ -335,7 +323,7 @@ func GetHostname() (string, error) {
 // SetHostname changes the static hostname via the system bus.
 // newHost is your desired hostname, interactive=false skips any prompt.
 func SetHostname(newHost string) error {
-	return withDbus(func(conn *dbus.Conn) error {
+	return system.WithDbus(func(conn *dbus.Conn) error {
 		obj := conn.Object(
 			"org.freedesktop.hostname1",
 			dbus.ObjectPath("/org/freedesktop/hostname1"),
@@ -356,7 +344,7 @@ func SetHostname(newHost string) error {
 func ConfigureSTA(iface string, ssid string, password string, autoconnect bool) (string, error) {
 	uuid := uuid.New()
 
-	err := withDbus(func(conn *dbus.Conn) error {
+	err := system.WithDbus(func(conn *dbus.Conn) error {
 		_, err := AddStationConnection(conn, uuid, ssid, password, autoconnect)
 		if err != nil {
 			return fmt.Errorf("failed to create station connection: %v", err)
@@ -378,7 +366,7 @@ func ConfigureSTA(iface string, ssid string, password string, autoconnect bool) 
 func ConfigureAP(iface string, ssid string, password string, autoconnect bool) (string, error) {
 	uuid := uuid.New()
 
-	err := withDbus(func(conn *dbus.Conn) error {
+	err := system.WithDbus(func(conn *dbus.Conn) error {
 		_, err := AddAccessPointConnection(conn, uuid, ssid, password, autoconnect)
 		if err != nil {
 			return fmt.Errorf("failed to create access point connection: %v", err)
@@ -399,7 +387,7 @@ func ConfigureAP(iface string, ssid string, password string, autoconnect bool) (
 // The connection will be activated on the specified interface.
 // Returns an error if any operation fails.
 func Up(iface string, uuid string) error {
-	return withDbus(func(conn *dbus.Conn) error {
+	return system.WithDbus(func(conn *dbus.Conn) error {
 		connPath, err := GetConnectionPath(conn, uuid)
 		if err != nil {
 			return err
@@ -429,7 +417,7 @@ func Up(iface string, uuid string) error {
 // It takes the interface name as an argument.
 // Returns an error if the device cannot be found or disconnected.
 func Down(iface string) error {
-	return withDbus(func(conn *dbus.Conn) error {
+	return system.WithDbus(func(conn *dbus.Conn) error {
 		devPath, err := GetDeviceByIpIface(conn, iface)
 		if err != nil {
 			return err
@@ -447,7 +435,7 @@ func Down(iface string) error {
 // If no connection with the UUID exists, it returns nil.
 // Returns an error if the connection exists but cannot be deleted.
 func Remove(uuid string) error {
-	return withDbus(func(conn *dbus.Conn) error {
+	return system.WithDbus(func(conn *dbus.Conn) error {
 		connPath, err := GetConnectionPath(conn, uuid)
 		if err != nil {
 			return err

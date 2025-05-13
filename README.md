@@ -6,6 +6,7 @@ A simple daemon and REST API designed to simplify the management of various syst
 - Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure network connections
 - System hostname: Dynamically update the system's hostname
 - Authorized SSH keys: Directly managing the user's authorized_keys file to securely add, remove, or modify authorized SSH keys
+- System state: Restart and shutdown the system
 
 ## Requirements
 
@@ -85,6 +86,8 @@ All endpoints except `/health` require authentication via an API token passed in
 | POST    | `/hostname`                         | Set the hostname                        |
 | POST    | `/users/{user}/keys`                | Add an authorized SSH key               |
 | DELETE  | `/users/{user}/keys/{fingerprint}`  | Remove an authorized SSH key            |
+| POST    | `/system/restart`                   | Restart the system                      |
+| POST    | `/system/shutdown`                  | Shutdown the system                     |
 
 ### Response Codes
 

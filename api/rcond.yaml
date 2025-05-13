@@ -494,3 +494,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /system/restart:
+    post:
+      summary: Restart system
+      description: Restarts the system
+      responses:
+        '200':
+          description: System restarted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /system/shutdown:
+    post:
+      summary: Shutdown system
+      description: Shuts down the system
+      responses:
+        '200':
+          description: System shut down successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
