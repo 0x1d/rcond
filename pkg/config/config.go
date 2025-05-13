@@ -7,12 +7,24 @@ import (
 )
 
 type Config struct {
-	Rcond RcondConfig `yaml:"rcond"`
+	Rcond   RcondConfig   `yaml:"rcond"`
+	Cluster ClusterConfig `yaml:"cluster"`
 }
 
 type RcondConfig struct {
 	Addr     string `yaml:"addr"`
 	ApiToken string `yaml:"api_token"`
+}
+
+type ClusterConfig struct {
+	Enabled       bool     `yaml:"enabled"`
+	NodeName      string   `yaml:"node_name"`
+	SecretKey     string   `yaml:"secret_key"`
+	Join          []string `yaml:"join"`
+	AdvertiseAddr string   `yaml:"advertise_addr"`
+	AdvertisePort int      `yaml:"advertise_port"`
+	BindAddr      string   `yaml:"bind_addr"`
+	BindPort      int      `yaml:"bind_port"`
 }
 
 func LoadConfig(path string) (*Config, error) {

@@ -7,6 +7,7 @@ A simple daemon and REST API designed to simplify the management of various syst
 - System hostname: Dynamically update the system's hostname
 - Authorized SSH keys: Directly managing the user's authorized_keys file to securely add, remove, or modify authorized SSH keys
 - System state: Restart and shutdown the system
+- Cluster: Join and manage a cluster of rcond nodes
 
 ## Requirements
 
@@ -43,19 +44,59 @@ The dev target will run the main.go directly with environment variable configura
 make dev
 ```
 
-## Configuration
+You can also run a cluster agent in dev mode:
 
-### File
+```sh
+make dev-agent
+```
+
+## Configuration
 
 The default config file location is `/etc/rcond/config.yaml`.  
 It can be overwritten by environment variables and flags.  
 An full example configuration with comments can be found in `config/rcond.yaml`
+
+### API Server
+
+The API server is the main component of the rcond daemon. It is responsible for managing the host and providing a REST API for managing the system.
 
 Example configuration:
 ```yaml
 rcond:
   addr: 0.0.0.0:8080
   api_token: 1234567890
+```
+
+### Cluster
+
+The cluster agent is a component of rcond that is responsible for joining and managing a cluster of rcond nodes.
+This functionality can be used to manage and configure multiple hosts through a single API server.  
+In the background, the cluster agent will use [Serf](https://github.com/hashicorp/serf) to form a cluster, handle node discovery and gossip.
+
+Forming a cluster is optional and can be enabled by configuring the cluster section in the config file.
+
+Example configuration:
+```yaml
+cluster:
+  # Enable the cluster agent 
+  enabled: true
+  # Name of the node in the cluster
+  node_name: rcond
+  # Secret key for the cluster agent used for message encryption.
+  # Must be 32 bytes long and base64 encoded.
+  # Generate with: base64 /dev/urandom | tr -d '\n' | head -c 32
+  secret_key: DMXnaJUUbIBMj1Df0dPsQY+Sks1VxWTa
+  # Advertise address for the cluster agent
+  advertise_addr: 0.0.0.0
+  # Advertise port for the cluster agent
+  advertise_port: 7946
+  # Bind address for the cluster agent
+  bind_addr: 0.0.0.0
+  # Bind port for the cluster agent
+  bind_port: 7946
+  # Join addresses for the cluster agent
+  join:
+    - 127.0.0.1:7947
 ```
 
 ### Environment Variables
@@ -88,6 +129,7 @@ All endpoints except `/health` require authentication via an API token passed in
 | DELETE  | `/users/{user}/keys/{fingerprint}`  | Remove an authorized SSH key            |
 | POST    | `/system/restart`                   | Restart the system                      |
 | POST    | `/system/shutdown`                  | Shutdown the system                     |
+| GET     | `/cluster/members`                  | Get the cluster members                 |
 
 ### Response Codes
 

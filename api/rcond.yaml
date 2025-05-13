@@ -537,3 +537,67 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   
+  /cluster/members:
+    get:
+      summary: Get cluster members
+      description: Returns the list of nodes in the cluster
+      responses:
+        '200':
+          description: Cluster members retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                      description: Node name
+                      example: "rcond-agent"
+                    Addr:
+                      type: string
+                      description: Node address
+                      example: "192.168.1.100"
+                    Port:
+                      type: integer
+                      description: Node port
+                      example: 8080
+                    Tags:
+                      type: object
+                      description: Node tags
+                      example: {"role": "web", "env": "prod"}
+                    Status:
+                      type: integer
+                      description: Node status
+                      example: 1
+                    ProtocolMin:
+                      type: integer
+                      description: Minimum protocol version
+                      example: 1
+                    ProtocolMax:
+                      type: integer
+                      description: Maximum protocol version
+                      example: 1
+                    ProtocolCur:
+                      type: integer
+                      description: Current protocol version
+                      example: 1
+                    DelegateMin:
+                      type: integer
+                      description: Minimum delegate version
+                      example: 1
+                    DelegateMax:
+                      type: integer
+                      description: Maximum delegate version
+                      example: 1
+                    DelegateCur:
+                      type: integer
+                      description: Current delegate version
+                      example: 1
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

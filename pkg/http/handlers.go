@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/0x1d/rcond/pkg/cluster"
 	network "github.com/0x1d/rcond/pkg/network"
 	"github.com/0x1d/rcond/pkg/system"
 	"github.com/0x1d/rcond/pkg/user"
@@ -286,4 +287,25 @@ func HandleShutdown(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+func ClusterAgentWrapper(agent *cluster.Agent) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		HandleClusterMembers(w, r, agent)
+	}
+}
+
+func HandleClusterMembers(w http.ResponseWriter, r *http.Request, agent *cluster.Agent) {
+	if agent == nil {
+		writeError(w, "cluster agent is not initialized", http.StatusInternalServerError)
+		return
+	}
+	members, err := agent.Members()
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(members)
 }

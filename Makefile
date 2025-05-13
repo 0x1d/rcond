@@ -37,9 +37,10 @@ run: build
 	bin/rcond-${ARCH} -config config/rcond.yaml
 
 dev:
-	RCOND_ADDR=127.0.0.1:8080 \
-	RCOND_API_TOKEN=1234567890 \
-	go run cmd/rcond/main.go
+	go run cmd/rcond/main.go -config config/rcond.yaml
+
+dev-agent:
+	go run cmd/rcond/main.go -config config/rcond-agent.yaml
 
 upload:
 	scp bin/rcond-${ARCH} pi@192.168.1.43:/home/pi/rcond

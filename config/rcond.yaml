@@ -3,3 +3,24 @@ rcond:
   addr: 0.0.0.0:8080
   # API token to use for authentication
   api_token: 1234567890
+
+cluster:
+  # Enable the cluster agent 
+  enabled: true
+  # Name of the node in the cluster
+  node_name: rcond
+  # Secret key for the cluster agent used for message encryption.
+  # Must be 32 bytes long and base64 encoded.
+  # Generate with: base64 /dev/urandom | tr -d '\n' | head -c 32
+  secret_key: DMXnaJUUbIBMj1Df0dPsQY+Sks1VxWTa
+  # Advertise address for the cluster agent
+  advertise_addr: 0.0.0.0
+  # Advertise port for the cluster agent
+  advertise_port: 7946
+  # Bind address for the cluster agent
+  bind_addr: 0.0.0.0
+  # Bind port for the cluster agent
+  bind_port: 7946
+  # Join addresses for the cluster agent
+  #join:
+  #  - 127.0.0.1:7947

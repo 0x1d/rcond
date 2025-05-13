@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/0x1d/rcond/pkg/cluster"
 	"github.com/0x1d/rcond/pkg/config"
 	http "github.com/0x1d/rcond/pkg/http"
 )
@@ -25,15 +26,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	srv := http.NewServer(appConfig)
-	srv.RegisterRoutes()
+	clusterAgent := startClusterAgent(appConfig)
+	startApiServer(appConfig, clusterAgent)
 
-	log.Printf("Starting server on %s", appConfig.Rcond.Addr)
-	if err := srv.Start(); err != nil {
-		log.Fatal(err)
-	}
+	select {}
 }
-
 func loadConfig() (*config.Config, error) {
 	configPath := "/etc/rcond/config.yaml"
 	appConfig := &config.Config{}
@@ -79,6 +76,41 @@ func loadConfig() (*config.Config, error) {
 	}
 
 	return appConfig, nil
+}
+
+func startApiServer(appConfig *config.Config, clusterAgent *cluster.Agent) *http.Server {
+	srv := http.NewServer(appConfig)
+	srv.WithClusterAgent(clusterAgent)
+	srv.RegisterRoutes()
+
+	log.Printf("Starting API server on %s", appConfig.Rcond.Addr)
+	if err := srv.Start(); err != nil {
+		log.Fatal(err)
+	}
+	return srv
+}
+
+func startClusterAgent(appConfig *config.Config) *cluster.Agent {
+	clusterConfig := &appConfig.Cluster
+	if clusterConfig.Enabled {
+		log.Printf("Starting cluster agent on %s:%d", clusterConfig.BindAddr, clusterConfig.BindPort)
+		clusterAgent, err := cluster.NewAgent(clusterConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// join nodes in the cluster if the join addresses are provided
+		if len(clusterConfig.Join) > 0 {
+			clusterAgent.Join(clusterConfig.Join, true)
+		}
+		// get members in the cluster
+		members, err := clusterAgent.Members()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Members: %v", members)
+		return clusterAgent
+	}
+	return nil
 }
 
 func overrideConfigValuesFromEnv(envMap map[string]*string) {

@@ -6,14 +6,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/0x1d/rcond/pkg/cluster"
 	"github.com/0x1d/rcond/pkg/config"
 	"github.com/gorilla/mux"
 )
 
 type Server struct {
-	router   *mux.Router
-	srv      *http.Server
-	apiToken string
+	router       *mux.Router
+	srv          *http.Server
+	apiToken     string
+	clusterAgent *cluster.Agent
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -35,6 +37,11 @@ func NewServer(cfg *config.Config) *Server {
 		srv:      srv,
 		apiToken: cfg.Rcond.ApiToken,
 	}
+}
+
+func (s *Server) WithClusterAgent(agent *cluster.Agent) *Server {
+	s.clusterAgent = agent
+	return s
 }
 
 func (s *Server) Start() error {
@@ -69,6 +76,7 @@ func (s *Server) RegisterRoutes() {
 	s.router.HandleFunc("/users/{user}/keys/{fingerprint}", s.verifyToken(HandleRemoveAuthorizedKey)).Methods(http.MethodDelete)
 	s.router.HandleFunc("/system/restart", s.verifyToken(HandleReboot)).Methods(http.MethodPost)
 	s.router.HandleFunc("/system/shutdown", s.verifyToken(HandleShutdown)).Methods(http.MethodPost)
+	s.router.HandleFunc("/cluster/members", s.verifyToken(ClusterAgentWrapper(s.clusterAgent))).Methods(http.MethodGet)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {

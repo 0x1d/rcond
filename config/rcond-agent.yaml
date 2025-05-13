@@ -1,0 +1,15 @@
+# This is an example configuration file for running a cluster agent.
+rcond:
+  addr: 0.0.0.0:8081
+  api_token: 1234567890
+
+cluster:
+  enabled: true
+  node_name: rcond-agent
+  secret_key: DMXnaJUUbIBMj1Df0dPsQY+Sks1VxWTa
+  advertise_addr: 0.0.0.0
+  advertise_port: 7947
+  bind_addr: 0.0.0.0
+  bind_port: 7947
+  join:
+    - 127.0.0.1:7946
