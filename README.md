@@ -76,7 +76,8 @@ All endpoints except `/health` require authentication via an API token passed in
 | Method  | Path                                | Description                             |
 |---------|-------------------------------------|-----------------------------------------|
 | GET     | `/health`                           | Health check endpoint                   |
-| POST    | `/network/ap`                       | Create and activate a WiFi access point |
+| POST    | `/network/ap`                       | Create a WiFi access point              |
+| POST    | `/network/sta`                      | Connect to a WiFi access point          |
 | PUT     | `/network/interface/{interface}`    | Activate a connection                   |
 | DELETE  | `/network/interface/{interface}`    | Deactivate a connection                 |
 | DELETE  | `/network/connection/{uuid}`        | Remove a connection                     |
