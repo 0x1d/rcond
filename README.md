@@ -1,5 +1,7 @@
 # rcond
 
+[![main](https://github.com/0x1d/rcond/actions/workflows/main.yaml/badge.svg)](https://github.com/0x1d/rcond/actions/workflows/main.yaml)
+
 A simple daemon and REST API designed to simplify the management of various system components, including:
 - Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure network connections
 - System hostname: Dynamically update the system's hostname
