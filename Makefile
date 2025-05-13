@@ -8,6 +8,9 @@ generate:
 	swagger generate server -f api/rcond.yaml -t api/
 	go mod tidy
 
+test:
+	go test -v ./...
+
 build:
 	mkdir -p bin
 	env GOOS=linux GOARCH=${ARCH} go build -o bin/rcond-${ARCH} ./cmd/rcond/main.go
