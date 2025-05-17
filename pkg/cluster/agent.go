@@ -10,16 +10,18 @@ import (
 	"github.com/hashicorp/serf/serf"
 )
 
+// Agent represents a Serf cluster agent.
 type Agent struct {
 	Serf *serf.Serf
 }
 
-// ClusterEvent represents a custom event that will be sent to the Serf cluster
+// ClusterEvent represents a custom event that will be sent to the Serf cluster.
 type ClusterEvent struct {
 	Name string
 	Data []byte
 }
 
+// NewAgent creates a new Serf cluster agent with the given configuration and event handlers.
 func NewAgent(clusterConfig *config.ClusterConfig, clusterEvents map[string]func([]byte)) (*Agent, error) {
 	config := serf.DefaultConfig()
 	config.Init()
@@ -65,11 +67,13 @@ func (a *Agent) Event(event ClusterEvent) error {
 	return nil
 }
 
+// Members returns a list of members in the Serf cluster.
 func (a *Agent) Members() ([]serf.Member, error) {
 	log.Printf("Getting members of the cluster")
 	return a.Serf.Members(), nil
 }
 
+// Join attempts to join the Serf cluster with the given addresses, optionally ignoring old nodes.
 func (a *Agent) Join(addrs []string, ignoreOld bool) (int, error) {
 	log.Printf("Joining nodes in the cluster: %v", addrs)
 	n, err := a.Serf.Join(addrs, ignoreOld)
@@ -81,16 +85,18 @@ func (a *Agent) Join(addrs []string, ignoreOld bool) (int, error) {
 	return n, nil
 }
 
+// Leave causes the agent to leave the Serf cluster.
 func (a *Agent) Leave() error {
 	return a.Serf.Leave()
 }
 
+// Shutdown shuts down the Serf cluster agent.
 func (a *Agent) Shutdown() error {
 	log.Printf("Shutting down cluster agent")
 	return a.Serf.Shutdown()
 }
 
-// handleEvents handles Serf events received on the event channel
+// handleEvents handles Serf events received on the event channel.
 func handleEvents(eventCh chan serf.Event, clusterEvents map[string]func([]byte)) {
 	for event := range eventCh {
 		switch event.EventType() {
