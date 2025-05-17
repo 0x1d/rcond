@@ -41,6 +41,11 @@ type authorizedKeyRequest struct {
 	PubKey string `json:"pubkey"`
 }
 
+type clusterEventRequest struct {
+	Name    string `json:"name"`
+	Payload string `json:"payload,omitempty"`
+}
+
 type errorResponse struct {
 	Error string `json:"error"`
 }
@@ -52,11 +57,6 @@ func writeError(w http.ResponseWriter, message string, code int) {
 }
 
 func HandleConfigureSTA(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req configureSTARequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, err.Error(), http.StatusBadRequest)
@@ -76,11 +76,6 @@ func HandleConfigureSTA(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleConfigureAP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req configureAPRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, err.Error(), http.StatusBadRequest)
@@ -111,11 +106,6 @@ func HandleConfigureAP(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleNetworkUp(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req networkUpRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, err.Error(), http.StatusBadRequest)
@@ -137,11 +127,6 @@ func HandleNetworkUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleNetworkDown(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	vars := mux.Vars(r)
 	iface := vars["interface"]
 	if err := network.Down(iface); err != nil {
@@ -154,11 +139,6 @@ func HandleNetworkDown(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleNetworkRemove(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	vars := mux.Vars(r)
 	uuid := vars["uuid"]
 	if err := network.Remove(uuid); err != nil {
@@ -182,11 +162,6 @@ func HandleGetHostname(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleSetHostname(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req setHostnameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, err.Error(), http.StatusBadRequest)
@@ -203,11 +178,6 @@ func HandleSetHostname(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleAddAuthorizedKey(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req authorizedKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, err.Error(), http.StatusBadRequest)
@@ -227,11 +197,6 @@ func HandleAddAuthorizedKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleRemoveAuthorizedKey(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	vars := mux.Vars(r)
 	fingerprint := vars["fingerprint"]
 	if fingerprint == "" {
@@ -261,11 +226,6 @@ func HandleRemoveAuthorizedKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleReboot(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	if err := system.Restart(); err != nil {
 		writeError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -276,11 +236,6 @@ func HandleReboot(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleShutdown(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	if err := system.Shutdown(); err != nil {
 		writeError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -346,4 +301,24 @@ func HandleClusterMembers(w http.ResponseWriter, r *http.Request, agent *cluster
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(members)
+}
+
+func HandleClusterEvent(w http.ResponseWriter, r *http.Request, agent *cluster.Agent) {
+	var req clusterEventRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	event := cluster.ClusterEvent{
+		Name: req.Name,
+		Data: []byte(req.Payload),
+	}
+	err := agent.Event(event)
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }

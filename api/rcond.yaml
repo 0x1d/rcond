@@ -668,3 +668,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /cluster/event:
+    post:
+      summary: Send a cluster event
+      description: Send a cluster event to all nodes in the cluster
+      requestBody:
+        description: Cluster event details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: Event name
+                  type: string
+                  example: "printHostname"
+                payload:
+                  description: Event payload
+                  type: string
+                  example: "blabla"
+      responses:
+        '200':
+          description: Event sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    description: Indicates if the event was sent successfully
+                    type: string
+                    example: "success"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

@@ -25,6 +25,7 @@ type ClusterConfig struct {
 	AdvertisePort int      `yaml:"advertise_port"`
 	BindAddr      string   `yaml:"bind_addr"`
 	BindPort      int      `yaml:"bind_port"`
+	LogLevel      string   `yaml:"log_level"`
 }
 
 func LoadConfig(path string) (*Config, error) {

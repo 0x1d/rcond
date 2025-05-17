@@ -7,6 +7,8 @@ rcond:
 cluster:
   # Enable the cluster agent 
   enabled: true
+  # Log level
+  log_level: INFO
   # Name of the node in the cluster
   node_name: rcond
   # Secret key for the cluster agent used for message encryption.

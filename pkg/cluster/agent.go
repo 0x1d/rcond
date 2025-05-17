@@ -1,9 +1,12 @@
 package cluster
 
 import (
+	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/0x1d/rcond/pkg/config"
+	"github.com/hashicorp/logutils"
 	"github.com/hashicorp/serf/serf"
 )
 
@@ -11,8 +14,22 @@ type Agent struct {
 	Serf *serf.Serf
 }
 
-func NewAgent(clusterConfig *config.ClusterConfig) (*Agent, error) {
+// ClusterEvent represents a custom event that will be sent to the Serf cluster
+type ClusterEvent struct {
+	Name string
+	Data []byte
+}
+
+func NewAgent(clusterConfig *config.ClusterConfig, clusterEvents map[string]func([]byte)) (*Agent, error) {
 	config := serf.DefaultConfig()
+	config.Init()
+	logFilter := &logutils.LevelFilter{
+		Levels:   []logutils.LogLevel{"DEBUG", "INFO", "WARN", "ERROR"},
+		MinLevel: logutils.LogLevel(clusterConfig.LogLevel),
+		Writer:   os.Stderr,
+	}
+	config.LogOutput = logFilter
+	config.MemberlistConfig.LogOutput = logFilter
 	config.NodeName = clusterConfig.NodeName
 	config.ProtocolVersion = serf.ProtocolVersionMax
 	config.MemberlistConfig.SecretKey = []byte(clusterConfig.SecretKey)
@@ -21,12 +38,31 @@ func NewAgent(clusterConfig *config.ClusterConfig) (*Agent, error) {
 	config.MemberlistConfig.BindAddr = clusterConfig.BindAddr
 	config.MemberlistConfig.BindPort = clusterConfig.BindPort
 
+	// Setup event channel
+	eventCh := make(chan serf.Event, 10)
+	config.EventCh = eventCh
+	go handleEvents(eventCh, clusterEvents)
+
+	// Start Serf
 	serf, err := serf.Create(config)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Agent{Serf: serf}, nil
+}
+
+// Event sends a custom event to the Serf cluster.
+// It marshals the provided ClusterEvent into JSON and then uses Serf's UserEvent method to send the event.
+func (a *Agent) Event(event ClusterEvent) error {
+	eventData, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	if err := a.Serf.UserEvent(event.Name, eventData, false); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a *Agent) Members() ([]serf.Member, error) {
@@ -52,4 +88,22 @@ func (a *Agent) Leave() error {
 func (a *Agent) Shutdown() error {
 	log.Printf("Shutting down cluster agent")
 	return a.Serf.Shutdown()
+}
+
+// handleEvents handles Serf events received on the event channel
+func handleEvents(eventCh chan serf.Event, clusterEvents map[string]func([]byte)) {
+	for event := range eventCh {
+		switch event.EventType() {
+		case serf.EventUser:
+			userEvent := event.(serf.UserEvent)
+			eventHandlers := clusterEvents
+			if handler, ok := eventHandlers[userEvent.Name]; ok {
+				handler(userEvent.Payload)
+			} else {
+				log.Printf("No event handler found for event: %s", userEvent.Name)
+			}
+		default:
+			log.Printf("Received event: %s\n", event.EventType())
+		}
+	}
 }

@@ -13,7 +13,7 @@ func Restart() error {
 		log.Println("Rebooting system...")
 		call := obj.Call("org.freedesktop.systemd1.Manager.Reboot", 0)
 		if call.Err != nil {
-			log.Fatal(call.Err)
+			return call.Err
 		}
 		return nil
 	})
@@ -26,7 +26,7 @@ func Shutdown() error {
 		log.Println("Shutting down system...")
 		call := obj.Call("org.freedesktop.systemd1.Manager.PowerOff", 0)
 		if call.Err != nil {
-			log.Fatal(call.Err)
+			return call.Err
 		}
 		return nil
 	})

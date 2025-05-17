@@ -94,7 +94,7 @@ func startClusterAgent(appConfig *config.Config) *cluster.Agent {
 	clusterConfig := &appConfig.Cluster
 	if clusterConfig.Enabled {
 		log.Printf("Starting cluster agent on %s:%d", clusterConfig.BindAddr, clusterConfig.BindPort)
-		clusterAgent, err := cluster.NewAgent(clusterConfig)
+		clusterAgent, err := cluster.NewAgent(clusterConfig, cluster.ClusterEventsMap())
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -102,12 +102,6 @@ func startClusterAgent(appConfig *config.Config) *cluster.Agent {
 		if len(clusterConfig.Join) > 0 {
 			clusterAgent.Join(clusterConfig.Join, true)
 		}
-		// get members in the cluster
-		members, err := clusterAgent.Members()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Members: %v", members)
 		return clusterAgent
 	}
 	return nil

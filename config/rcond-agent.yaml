@@ -5,11 +5,12 @@ rcond:
 
 cluster:
   enabled: true
+  log_level: INFO
   node_name: rcond-agent
   secret_key: DMXnaJUUbIBMj1Df0dPsQY+Sks1VxWTa
   advertise_addr: 0.0.0.0
   advertise_port: 7947
   bind_addr: 0.0.0.0
   bind_port: 7947
-#  join:
-#    - 127.0.0.1:7946
+  join:
+    - 127.0.0.1:7946

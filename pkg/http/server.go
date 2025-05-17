@@ -79,6 +79,7 @@ func (s *Server) RegisterRoutes() {
 	s.router.HandleFunc("/cluster/members", s.verifyToken(ClusterAgentHandler(s.clusterAgent, HandleClusterMembers))).Methods(http.MethodGet)
 	s.router.HandleFunc("/cluster/join", s.verifyToken(ClusterAgentHandler(s.clusterAgent, HandleClusterJoin))).Methods(http.MethodPost)
 	s.router.HandleFunc("/cluster/leave", s.verifyToken(ClusterAgentHandler(s.clusterAgent, HandleClusterLeave))).Methods(http.MethodPost)
+	s.router.HandleFunc("/cluster/event", s.verifyToken(ClusterAgentHandler(s.clusterAgent, HandleClusterEvent))).Methods(http.MethodPost)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {

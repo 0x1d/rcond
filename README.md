@@ -132,6 +132,7 @@ All endpoints except `/health` require authentication via an API token passed in
 | GET     | `/cluster/members`                  | Get the cluster members                 |
 | POST    | `/cluster/join`                     | Join cluster nodes                      |
 | POST    | `/cluster/leave`                    | Leave the cluster                       |
+| POST    | `/cluster/event`                    | Send a cluster event                    |
 
 
 ### Response Codes
@@ -143,6 +144,25 @@ All endpoints except `/health` require authentication via an API token passed in
 
 ### Request/Response Format
 All endpoints use JSON for request and response payloads.
+
+## Cluster Events
+
+Cluster events are used for broadcast messages to all nodes in the cluster. They are sent as HTTP POST requests to the `/cluster/event` endpoint.
+
+The request body should be a JSON object with the following fields:
+- `name`: The name of the event
+- `payload`: The payload of the event, optional
+
+The response will be a JSON object with the following fields:
+- `status`: The status of the event. This is a string, either "success" or "error".
+- `error`: If the status is "error", this field will contain a string describing the error. This field is optional.
+
+Following events are implemented:
+
+| Event Name | Description          | Payload |
+|------------|----------------------|---------|
+| restart    | Restart the cluster  | N/A     |
+| shutdown   | Shutdown the cluster | N/A     |
 
 ## Examples
 
