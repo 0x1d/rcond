@@ -171,7 +171,7 @@ Following events are implemented:
 This example will automatically connect to a WiFi access point with the given SSID and password on the interface "wlan0".
 
 ```bash
-curl -sSf -X POST "http://rpi-test:8080/network/sta" \
+curl -X POST "http://rpi-test:8080/network/sta" \
   -H "Content-Type: application/json" \
   -H "X-API-Token: 1234567890" \
   -d '{
@@ -187,7 +187,7 @@ curl -sSf -X POST "http://rpi-test:8080/network/sta" \
 This example will create an access point on the interface "wlan0" with the given SSID and password.
 
 ```bash
-curl -sSf -X POST "http://rpi-test:8080/network/ap" \
+curl -X POST "http://rpi-test:8080/network/ap" \
   -H "Content-Type: application/json" \
   -H "X-API-Token: 1234567890" \
   -d '{
@@ -195,5 +195,17 @@ curl -sSf -X POST "http://rpi-test:8080/network/ap" \
     "ssid": "MyAccessPoint",
     "password": "StrongPassword",
     "autoconnect": true
+  }'
+```
+### Restart the cluster
+
+This example will restart all nodes in the cluster
+
+```bash
+curl -X POST "http://rpi-test:8080/cluster/event" \
+  -H "accept: application/json" \
+  -H "X-API-Token: 1234567890" \
+  -d '{
+    "name": "restart"
   }'
 ```

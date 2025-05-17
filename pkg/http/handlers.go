@@ -304,6 +304,10 @@ func HandleClusterMembers(w http.ResponseWriter, r *http.Request, agent *cluster
 }
 
 func HandleClusterEvent(w http.ResponseWriter, r *http.Request, agent *cluster.Agent) {
+	if agent == nil {
+		writeError(w, "cluster agent is not initialized", http.StatusInternalServerError)
+		return
+	}
 	var req clusterEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, err.Error(), http.StatusBadRequest)
