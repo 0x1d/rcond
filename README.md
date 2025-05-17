@@ -2,10 +2,10 @@
 
 [![main](https://github.com/0x1d/rcond/actions/workflows/main.yaml/badge.svg)](https://github.com/0x1d/rcond/actions/workflows/main.yaml)
 
-A simple daemon and REST API designed to simplify the management of various system components, including:
-- Network connections: Utilizing NetworkManager's D-Bus interface to dynamically configure network connections
-- System hostname: Dynamically update the system's hostname
-- Authorized SSH keys: Directly managing the user's authorized_keys file to securely add, remove, or modify authorized SSH keys
+A distributed management daemon designed to remotely configure system components, including:
+- Network connections: Manage network connections through NetworkManager's D-Bus interface
+- System hostname: Update the system's hostname
+- Authorized SSH keys: Manage the user's authorized_keys file to add, remove, or modify authorized SSH keys
 - System state: Restart and shutdown the system
 - Cluster: Join and manage a cluster of rcond nodes
 
@@ -19,7 +19,7 @@ A simple daemon and REST API designed to simplify the management of various syst
 
 ## Installation
 
-In order to install `rcond` as a systemd service, you need to specify the target architecture and then run the install make target.
+In order to build and install `rcond` as a systemd service, you need to specify the target architecture and then run the install make target.
 
 ```sh
 export ARCH=arm64
@@ -36,9 +36,7 @@ make run
 
 ## Develop
 
-The dev target will run the main.go directly with environment variable configuration:
-- RCOND_ADDR = 127.0.0.1:8080
-- RCOND_API_TOKEN = 1234567890
+The dev target will run the main.go using the default configuration in `config/rcond.yaml`
 
 ```sh
 make dev
