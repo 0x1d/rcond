@@ -11,6 +11,9 @@ import (
 	"github.com/0x1d/rcond/pkg/cluster"
 	"github.com/0x1d/rcond/pkg/config"
 	http "github.com/0x1d/rcond/pkg/http"
+	"github.com/0x1d/rcond/pkg/network"
+	"github.com/0x1d/rcond/pkg/system"
+	"github.com/godbus/dbus/v5"
 )
 
 func usage() {
@@ -26,11 +29,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	configureSystem(appConfig)
 	clusterAgent := startClusterAgent(appConfig)
 	startApiServer(appConfig, clusterAgent)
 
 	select {}
 }
+
 func loadConfig() (*config.Config, error) {
 	configPath := "/etc/rcond/config.yaml"
 	appConfig := &config.Config{}
@@ -83,7 +88,7 @@ func startApiServer(appConfig *config.Config, clusterAgent *cluster.Agent) *http
 	srv.WithClusterAgent(clusterAgent)
 	srv.RegisterRoutes()
 
-	log.Printf("Starting API server on %s", appConfig.Rcond.Addr)
+	log.Printf("[INFO] Starting API server on %s", appConfig.Rcond.Addr)
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
 	}
@@ -93,7 +98,7 @@ func startApiServer(appConfig *config.Config, clusterAgent *cluster.Agent) *http
 func startClusterAgent(appConfig *config.Config) *cluster.Agent {
 	clusterConfig := &appConfig.Cluster
 	if clusterConfig.Enabled {
-		log.Printf("Starting cluster agent on %s:%d", clusterConfig.BindAddr, clusterConfig.BindPort)
+		log.Printf("[INFO] Starting cluster agent on %s:%d", clusterConfig.BindAddr, clusterConfig.BindPort)
 		clusterAgent, err := cluster.NewAgent(clusterConfig, cluster.ClusterEventsMap())
 		if err != nil {
 			log.Fatal(err)
@@ -104,6 +109,43 @@ func startClusterAgent(appConfig *config.Config) *cluster.Agent {
 		}
 		return clusterAgent
 	}
+	return nil
+}
+
+func configureSystem(appConfig *config.Config) error {
+	log.Print("[INFO] Configure system")
+	// configure hostname
+	if err := network.SetHostname(appConfig.Hostname); err != nil {
+		log.Printf("[ERROR] %s", err)
+	}
+	// configure network connections
+	for _, connection := range appConfig.Network.Connections {
+		err := system.WithDbus(func(conn *dbus.Conn) error {
+			_, err := network.AddConnectionWithConfig(conn, &network.ConnectionConfig{
+				Type:        connection.Type,
+				UUID:        connection.UUID,
+				ID:          connection.ID,
+				AutoConnect: connection.AutoConnect,
+				SSID:        connection.SSID,
+				Mode:        connection.Mode,
+				Band:        connection.Band,
+				Channel:     connection.Channel,
+				KeyMgmt:     connection.KeyMgmt,
+				PSK:         connection.PSK,
+				IPv4Method:  connection.IPv4Method,
+				IPv6Method:  connection.IPv6Method,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			log.Printf("[ERROR] %s", err)
+		}
+
+	}
+	log.Print("[INFO] System configured")
 	return nil
 }
 

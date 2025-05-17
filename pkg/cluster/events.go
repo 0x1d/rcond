@@ -17,18 +17,18 @@ func ClusterEventsMap() map[string]func([]byte) {
 
 func restart(payload []byte) {
 	if err := system.Restart(); err != nil {
-		log.Printf("(ClusterEvent:restart) failed: %s", err)
+		log.Printf("[ERROR] (ClusterEvent:restart) failed: %s", err)
 	}
 }
 
 func shutdown(payload []byte) {
 	if err := system.Shutdown(); err != nil {
-		log.Printf("(ClusterEvent:shutdown) failed: %s", err)
+		log.Printf("[ERROR] (ClusterEvent:shutdown) failed: %s", err)
 	}
 }
 
 // just a sample function to test event functionality
 func printHostname(payload []byte) {
 	hostname, _ := network.GetHostname()
-	log.Printf("(ClusterEvent:printHostname): %s", hostname)
+	log.Printf("[INFO] (ClusterEvent:printHostname): %s", hostname)
 }

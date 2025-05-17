@@ -7,6 +7,7 @@ replace github.com/0x1d/rcond/cmd => ./cmd
 replace github.com/0x1d/rcond/pkg => ./pkg
 
 require (
+	github.com/godbus/dbus v4.1.0+incompatible
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1

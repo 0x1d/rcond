@@ -11,11 +11,11 @@ import (
 func WithDbus(fn func(*dbus.Conn) error) error {
 	conn, err := dbus.SystemBus()
 	if err != nil {
-		log.Printf("Failed to connect to system bus: %v", err)
+		log.Printf("[ERROR] Failed to connect to system bus: %v", err)
 		return err
 	}
 	if err := fn(conn); err != nil {
-		log.Print(err)
+		log.Printf("[ERROR] Failed to execute D-Bus function: %s", err)
 		return err
 	}
 	conn.Close()

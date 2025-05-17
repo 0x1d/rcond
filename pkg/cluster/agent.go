@@ -69,19 +69,19 @@ func (a *Agent) Event(event ClusterEvent) error {
 
 // Members returns a list of members in the Serf cluster.
 func (a *Agent) Members() ([]serf.Member, error) {
-	log.Printf("Getting members of the cluster")
+	log.Printf("[INFO] Getting members of the cluster")
 	return a.Serf.Members(), nil
 }
 
 // Join attempts to join the Serf cluster with the given addresses, optionally ignoring old nodes.
 func (a *Agent) Join(addrs []string, ignoreOld bool) (int, error) {
-	log.Printf("Joining nodes in the cluster: %v", addrs)
+	log.Printf("[INFO] Joining nodes in the cluster: %v", addrs)
 	n, err := a.Serf.Join(addrs, ignoreOld)
 	if err != nil {
-		log.Printf("Failed to join nodes in the cluster: %v", err)
+		log.Printf("[ERROR] Failed to join nodes in the cluster: %v", err)
 		return 0, err
 	}
-	log.Printf("Joined %d nodes in the cluster", n)
+	log.Printf("[INFO] Joined %d nodes in the cluster", n)
 	return n, nil
 }
 
@@ -92,24 +92,24 @@ func (a *Agent) Leave() error {
 
 // Shutdown shuts down the Serf cluster agent.
 func (a *Agent) Shutdown() error {
-	log.Printf("Shutting down cluster agent")
+	log.Printf("[INFO] Shutting down cluster agent")
 	return a.Serf.Shutdown()
 }
 
 // handleEvents handles Serf events received on the event channel.
 func handleEvents(eventCh chan serf.Event, clusterEvents map[string]func([]byte)) {
+	eventHandlers := clusterEvents
 	for event := range eventCh {
 		switch event.EventType() {
 		case serf.EventUser:
 			userEvent := event.(serf.UserEvent)
-			eventHandlers := clusterEvents
 			if handler, ok := eventHandlers[userEvent.Name]; ok {
 				handler(userEvent.Payload)
 			} else {
-				log.Printf("No event handler found for event: %s", userEvent.Name)
+				log.Printf("[INFO] No event handler found for event: %s", userEvent.Name)
 			}
 		default:
-			log.Printf("Received event: %s\n", event.EventType())
+			log.Printf("[INFO] Received event: %s\n", event.EventType())
 		}
 	}
 }

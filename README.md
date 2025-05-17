@@ -15,7 +15,7 @@ A distributed management daemon designed to remotely configure system components
 - Go
 - NetworkManager
 - systemd
-- Linux operating system
+- Linux
 
 ## Installation
 
