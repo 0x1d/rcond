@@ -601,3 +601,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /cluster/join:
+    post:
+      summary: Join the cluster
+      description: Join the cluster with the provided addresses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                join:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Successfully joined the cluster
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  joined:
+                    description: Number of nodes successfully joined
+                    type: integer
+                    example: 1
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /cluster/leave:
+    post:
+      summary: Leave the cluster
+      description: Leave the cluster
+      responses:
+        '200':
+          description: Successfully left the cluster
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    description: Indicates if the node has left the cluster
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

@@ -11,5 +11,5 @@ cluster:
   advertise_port: 7947
   bind_addr: 0.0.0.0
   bind_port: 7947
-  join:
-    - 127.0.0.1:7946
+#  join:
+#    - 127.0.0.1:7946

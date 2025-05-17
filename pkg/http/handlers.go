@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/0x1d/rcond/pkg/cluster"
 	network "github.com/0x1d/rcond/pkg/network"
@@ -289,10 +290,47 @@ func HandleShutdown(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
 
-func ClusterAgentWrapper(agent *cluster.Agent) func(http.ResponseWriter, *http.Request) {
+func ClusterAgentHandler(agent *cluster.Agent, handler func(http.ResponseWriter, *http.Request, *cluster.Agent)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		HandleClusterMembers(w, r, agent)
+		handler(w, r, agent)
 	}
+}
+
+func HandleClusterJoin(w http.ResponseWriter, r *http.Request, agent *cluster.Agent) {
+	var joinRequest struct {
+		Join []string `json:"join"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&joinRequest)
+	if err != nil {
+		writeError(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	joinAddrs := strings.Join(joinRequest.Join, ",")
+	if joinAddrs == "" {
+		writeError(w, "No join addresses provided", http.StatusBadRequest)
+		return
+	}
+
+	addrs := strings.Split(joinAddrs, ",")
+	n, err := agent.Join(addrs, true)
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"joined": n})
+}
+
+func HandleClusterLeave(w http.ResponseWriter, r *http.Request, agent *cluster.Agent) {
+	err := agent.Leave()
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
 
 func HandleClusterMembers(w http.ResponseWriter, r *http.Request, agent *cluster.Agent) {

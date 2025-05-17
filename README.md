@@ -130,6 +130,9 @@ All endpoints except `/health` require authentication via an API token passed in
 | POST    | `/system/restart`                   | Restart the system                      |
 | POST    | `/system/shutdown`                  | Shutdown the system                     |
 | GET     | `/cluster/members`                  | Get the cluster members                 |
+| POST    | `/cluster/join`                     | Join cluster nodes                      |
+| POST    | `/cluster/leave`                    | Leave the cluster                       |
+
 
 ### Response Codes
 
