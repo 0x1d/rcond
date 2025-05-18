@@ -248,21 +248,6 @@ func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.Objec
 		"/org/freedesktop/NetworkManager/Settings",
 	)
 
-	var wirelessMap map[string]dbus.Variant
-	if cfg.Mode == "ap" {
-		wirelessMap = map[string]dbus.Variant{
-			"ssid":    dbus.MakeVariant([]byte(cfg.SSID)),
-			"mode":    dbus.MakeVariant(cfg.Mode),
-			"band":    dbus.MakeVariant(cfg.Band),
-			"channel": dbus.MakeVariant(cfg.Channel),
-		}
-	} else {
-		wirelessMap = map[string]dbus.Variant{
-			"ssid": dbus.MakeVariant([]byte(cfg.SSID)),
-			"mode": dbus.MakeVariant(cfg.Mode),
-		}
-	}
-
 	settingsMap := map[string]map[string]dbus.Variant{
 		"connection": {
 			"type":        dbus.MakeVariant(cfg.Type),
@@ -270,17 +255,37 @@ func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.Objec
 			"id":          dbus.MakeVariant(cfg.ID),
 			"autoconnect": dbus.MakeVariant(cfg.AutoConnect),
 		},
-		"802-11-wireless": wirelessMap,
-		"802-11-wireless-security": {
-			"key-mgmt": dbus.MakeVariant(cfg.KeyMgmt),
-			"psk":      dbus.MakeVariant(cfg.PSK),
-		},
 		"ipv4": {
 			"method": dbus.MakeVariant(cfg.IPv4Method),
 		},
 		"ipv6": {
 			"method": dbus.MakeVariant(cfg.IPv6Method),
 		},
+	}
+
+	// configure wireless
+	if cfg.Type == "802-11-wireless" {
+		var wirelessMap map[string]dbus.Variant
+		if cfg.Mode == "ap" {
+			// Access Point mode
+			wirelessMap = map[string]dbus.Variant{
+				"ssid":    dbus.MakeVariant([]byte(cfg.SSID)),
+				"mode":    dbus.MakeVariant(cfg.Mode),
+				"band":    dbus.MakeVariant(cfg.Band),
+				"channel": dbus.MakeVariant(cfg.Channel),
+			}
+		} else {
+			// Station / Infrastructure mode
+			wirelessMap = map[string]dbus.Variant{
+				"ssid": dbus.MakeVariant([]byte(cfg.SSID)),
+				"mode": dbus.MakeVariant(cfg.Mode),
+			}
+		}
+		settingsMap["802-11-wireless"] = wirelessMap
+		settingsMap["802-11-wireless-security"] = map[string]dbus.Variant{
+			"key-mgmt": dbus.MakeVariant(cfg.KeyMgmt),
+			"psk":      dbus.MakeVariant(cfg.PSK),
+		}
 	}
 
 	var connPath dbus.ObjectPath

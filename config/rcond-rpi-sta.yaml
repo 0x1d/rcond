@@ -8,6 +8,8 @@ network:
   connections:
     # connect to MyHomeWifi on wlan0
     - name: MyHomeWiFi
+      id: MyHomeWiFi
+      uuid: f09c9d1a-af3f-4726-82dd-0dd9d3358a4e
       type: 802-11-wireless
       interface: wlan0
       ssid: MyHomeWiFi
@@ -20,6 +22,8 @@ network:
     # TODO
     # provide DHCP on eth0
     #- name: MyThingsNetwork
+    #  id: MyThingsNetwork
+    #  uuid: 12df0b71-73ca-4ca2-a5f6-be20983a311d
     #  type: 802-3-ethernet
     #  interface: eth0
     #  method: shared
