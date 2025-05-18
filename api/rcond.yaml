@@ -494,6 +494,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /system/file:
+    post:
+      summary: Upload a file
+      description: Uploads a file to the system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                  description: Path where the file will be stored
+                  example: "/path/to/file"
+                content:
+                  type: string
+                  description: Base64 encoded content of the file
+                  example: "SGVsbG8gV29ybGQh"
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /system/restart:
     post:
       summary: Restart system

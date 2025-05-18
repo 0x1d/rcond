@@ -4,6 +4,7 @@
 
 A distributed management daemon designed to remotely configure system components, including:
 - Network connections: Manage network connections through NetworkManager's D-Bus interface
+- Files: Manage files on the system
 - System hostname: Update the system's hostname
 - Authorized SSH keys: Manage the user's authorized_keys file to add, remove, or modify authorized SSH keys
 - System state: Restart and shutdown the system
@@ -143,12 +144,14 @@ All endpoints except `/health` require authentication via an API token passed in
 | POST    | `/hostname`                         | Set the hostname                        |
 | POST    | `/users/{user}/keys`                | Add an authorized SSH key               |
 | DELETE  | `/users/{user}/keys/{fingerprint}`  | Remove an authorized SSH key            |
+| POST    | `/system/file`                      | Upload a file to the system             |
 | POST    | `/system/restart`                   | Restart the system                      |
 | POST    | `/system/shutdown`                  | Shutdown the system                     |
 | GET     | `/cluster/members`                  | Get the cluster members                 |
 | POST    | `/cluster/join`                     | Join cluster nodes                      |
 | POST    | `/cluster/leave`                    | Leave the cluster                       |
 | POST    | `/cluster/event`                    | Send a cluster event                    |
+
 
 ### Response Codes
 
@@ -228,5 +231,21 @@ curl -X POST "http://rpi-test:8080/cluster/event" \
   -H "X-API-Token: 1234567890" \
   -d '{
     "name": "restart"
+  }'
+```
+
+### Upload a file
+
+This example will store Base64 encoded content to the target path.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/system/file' \
+  -H 'accept: application/json' \
+  -H 'X-API-Token: 1234567890' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "path": "/tmp/somefile",
+    "content": "Zm9vCg=="
   }'
 ```
