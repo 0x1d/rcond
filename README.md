@@ -26,26 +26,21 @@ export ARCH=arm64
 make install
 ```
 
-## Run
+## Development
 
-The run target will build the binary for target architecture and runs it using the default configuration in `config/rcond.yaml`
-
-```sh
-make run
-```
-
-## Develop
-
-The dev target will run the main.go using the default configuration in `config/rcond.yaml`
+There are several make targets available:
 
 ```sh
-make dev
-```
-
-You can also run a cluster agent in dev mode:
-
-```sh
-make dev-agent
+Available targets:
+ generate: Generate Swagger Spec
+ test: run tests
+ build: build binary for target $ARCH
+ install: build and install binary for target $ARCH as systemd service
+ uninstall: uninstall systemd service
+ run: run and build binary for target $ARCH
+ dev: run go programm
+ dev-agent: run go programm with agent config
+ upload: upload binary of given $ARCH to rpi-test
 ```
 
 ## Configuration
@@ -132,7 +127,6 @@ All endpoints except `/health` require authentication via an API token passed in
 | POST    | `/cluster/leave`                    | Leave the cluster                       |
 | POST    | `/cluster/event`                    | Send a cluster event                    |
 
-
 ### Response Codes
 
 - 200: Success
@@ -148,12 +142,18 @@ All endpoints use JSON for request and response payloads.
 Cluster events are used for broadcast messages to all nodes in the cluster. They are sent as HTTP POST requests to the `/cluster/event` endpoint.
 
 The request body should be a JSON object with the following fields:
-- `name`: The name of the event
-- `payload`: The payload of the event, optional
+
+| Field    | Description                             | Optional  |
+|----------|-----------------------------------------|-----------|
+| `name`   | The name of the event                   | No        |
+| `payload`| The payload of the event                | Yes       |
 
 The response will be a JSON object with the following fields:
-- `status`: The status of the event. This is a string, either "success" or "error".
-- `error`: If the status is "error", this field will contain a string describing the error. This field is optional.
+
+| Field    | Description                                                                      | Optional  |
+|----------|----------------------------------------------------------------------------------|-----------|
+| `status` | The status of the event. This is a string, either "success" or "error".          | No        |
+| `error`  | If the status is "error", this field will contain a string describing the error. | Yes       |
 
 Following events are implemented:
 
