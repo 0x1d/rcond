@@ -30,7 +30,7 @@ make install
 
 There are several make targets available:
 
-```sh
+```text
 Available targets:
  generate: Generate server from Swagger specs
  test: run tests
