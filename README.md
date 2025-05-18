@@ -70,7 +70,10 @@ Here is an example for creating an access point and share network connection on 
 ```yaml
 network:
   connections:
+    # create access point and share network connection on wlan0
     - name: MyHomeWiFi
+      id: MyHomeWiFi
+      uuid: 222b4580-3e08-4a2c-ae5e-316bb45d44f0
       type: 802-11-wireless
       interface: wlan0
       ssid: MyHomeWiFi
