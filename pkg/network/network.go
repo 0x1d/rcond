@@ -237,6 +237,12 @@ func AddStationConnection(conn *dbus.Conn, uuid uuid.UUID, ssid string, password
 // Returns the D-Bus object path of the new connection profile.
 // Returns an error if the connection creation fails.
 func AddConnectionWithConfig(conn *dbus.Conn, cfg *ConnectionConfig) (dbus.ObjectPath, error) {
+
+	// check of connection already exists and return existing connection path
+	if existingObjectPath, err := GetConnectionPath(conn, cfg.UUID); err == nil {
+		return existingObjectPath, nil
+	}
+
 	settingsObj := conn.Object(
 		"org.freedesktop.NetworkManager",
 		"/org/freedesktop/NetworkManager/Settings",

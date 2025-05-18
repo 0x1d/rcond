@@ -60,6 +60,29 @@ rcond:
   api_token: 1234567890
 ```
 
+### Network
+
+Network connections can be configured in the `rcond.yaml` file, and these configurations are applied automatically when the node starts up. This allows for easy management of network settings, including the creation of access points and the sharing of network connections, without requiring manual intervention after each reboot.
+
+Here is an example for creating an access point and share network connection on wlan0:
+
+```yaml
+network:
+  connections:
+    - name: MyHomeWiFi
+      type: 802-11-wireless
+      interface: wlan0
+      ssid: MyHomeWiFi
+      mode: ap
+      band: bg
+      channel: 1
+      keymgmt: wpa-psk
+      psk: SuperSecure
+      ipv4method: shared
+      ipv6method: ignore
+      autoconnect: true
+```
+
 ### Cluster
 
 The cluster agent is a component of rcond that is responsible for joining and managing a cluster of rcond nodes.
