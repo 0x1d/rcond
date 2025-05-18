@@ -2,7 +2,6 @@ package system
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -17,7 +16,7 @@ func StoreFile(path string, content []byte) error {
 	}
 
 	// Write the file
-	if err := ioutil.WriteFile(path, content, 0644); err != nil {
+	if err := os.WriteFile(path, content, 0644); err != nil {
 		return fmt.Errorf("failed to write file: %v", err)
 	}
 
