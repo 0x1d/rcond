@@ -9,7 +9,7 @@ info:
 	@echo "Available targets:"
 	@grep '^##' Makefile | sed 's/^##//'
 
-## generate: Generate Swagger Spec
+## generate: Generate server from Swagger specs
 generate:
 	swagger generate server -f api/rcond.yaml -t api/
 	go mod tidy

@@ -32,7 +32,7 @@ There are several make targets available:
 
 ```sh
 Available targets:
- generate: Generate Swagger Spec
+ generate: Generate server from Swagger specs
  test: run tests
  build: build binary for target $ARCH
  install: build and install binary for target $ARCH as systemd service
