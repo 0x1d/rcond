@@ -27,6 +27,13 @@ export ARCH=arm64
 make install
 ```
 
+## Run
+
+To run `rcond` manually, execute the following command in your terminal:
+```sh
+rcond -config config/rcond.yaml
+```
+
 ## Development
 
 There are several make targets available:
