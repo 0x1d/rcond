@@ -3,12 +3,13 @@ package system
 import (
 	"log"
 
+	"github.com/0x1d/rcond/pkg/util"
 	"github.com/godbus/dbus/v5"
 )
 
 // Restart restarts the system.
 func Restart() error {
-	return WithDbus(func(conn *dbus.Conn) error {
+	return util.WithConnection(func(conn *dbus.Conn) error {
 		obj := conn.Object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
 		log.Println("Rebooting system...")
 		call := obj.Call("org.freedesktop.systemd1.Manager.Reboot", 0)
@@ -21,7 +22,7 @@ func Restart() error {
 
 // Shutdown shuts down the system.
 func Shutdown() error {
-	return WithDbus(func(conn *dbus.Conn) error {
+	return util.WithConnection(func(conn *dbus.Conn) error {
 		obj := conn.Object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
 		log.Println("Shutting down system...")
 		call := obj.Call("org.freedesktop.systemd1.Manager.PowerOff", 0)

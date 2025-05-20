@@ -121,10 +121,19 @@ cluster:
 
 ### Environment Variables
 
-| Environment Variable | Description                             | Default       |
-|----------------------|-----------------------------------------|---------------|
-| RCOND_ADDR           | Address to bind the HTTP server to.     | 0.0.0.0:8080  |
-| RCOND_API_TOKEN      | API token to use for authentication.    | N/A           |
+| Environment Variable         | Description                              | Default        |
+|------------------------------|------------------------------------------|----------------|
+| HOSTNAME                     | Hostname to be set at startup.           | N/A            |
+| RCOND_ADDR                   | Address to bind the HTTP server to.      | 0.0.0.0:8080   |
+| RCOND_API_TOKEN              | API token to use for authentication.     | N/A            |
+| RCOND_CLUSTER_ENABLED        | Enable the cluster agent.                | false          |
+| RCOND_CLUSTER_NODE_NAME      | Name of the node in the cluster.         | rcond          |
+| RCOND_CLUSTER_SECRET_KEY     | Secret key for the cluster agent.        | N/A            |
+| RCOND_CLUSTER_ADVERTISE_ADDR | Advertise address for the cluster agent. | 0.0.0.0        |
+| RCOND_CLUSTER_ADVERTISE_PORT | Advertise port for the cluster agent.    | 7946           |
+| RCOND_CLUSTER_BIND_ADDR      | Bind address for the cluster agent.      | 0.0.0.0        |
+| RCOND_CLUSTER_BIND_PORT      | Bind port for the cluster agent.         | 7946           |
+| RCOND_CLUSTER_JOIN           | Join addresses for the cluster agent.    | 127.0.0.1:7947 |
 
 ## API
 

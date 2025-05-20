@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -42,6 +43,18 @@ func NewServer(cfg *config.Config) *Server {
 func (s *Server) WithClusterAgent(agent *cluster.Agent) *Server {
 	s.clusterAgent = agent
 	return s
+}
+
+func Up(appConfig *config.Config, clusterAgent *cluster.Agent) *Server {
+	srv := NewServer(appConfig)
+	srv.WithClusterAgent(clusterAgent)
+	srv.RegisterRoutes()
+
+	log.Printf("[INFO] Starting API server on %s", appConfig.Rcond.Addr)
+	if err := srv.Start(); err != nil {
+		log.Fatal(err)
+	}
+	return srv
 }
 
 func (s *Server) Start() error {

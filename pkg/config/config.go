@@ -3,19 +3,20 @@ package config
 import (
 	"os"
 
+	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Hostname string        `yaml:"hostname"`
+	Hostname string        `yaml:"hostname" envconfig:"HOSTNAME"`
 	Rcond    RcondConfig   `yaml:"rcond"`
 	Network  NetworkConfig `yaml:"network"`
 	Cluster  ClusterConfig `yaml:"cluster"`
 }
 
 type RcondConfig struct {
-	Addr     string `yaml:"addr"`
-	ApiToken string `yaml:"api_token"`
+	Addr     string `yaml:"addr" envconfig:"RCOND_ADDR"`
+	ApiToken string `yaml:"api_token" envconfig:"RCOND_API_TOKEN"`
 }
 
 type NetworkConfig struct {
@@ -38,28 +39,35 @@ type ConnectionConfig struct {
 }
 
 type ClusterConfig struct {
-	Enabled       bool     `yaml:"enabled"`
-	NodeName      string   `yaml:"node_name"`
-	SecretKey     string   `yaml:"secret_key"`
-	Join          []string `yaml:"join"`
-	AdvertiseAddr string   `yaml:"advertise_addr"`
-	AdvertisePort int      `yaml:"advertise_port"`
-	BindAddr      string   `yaml:"bind_addr"`
-	BindPort      int      `yaml:"bind_port"`
-	LogLevel      string   `yaml:"log_level"`
+	Enabled       bool     `yaml:"enabled" envconfig:"CLUSTER_ENABLED"`
+	NodeName      string   `yaml:"node_name" envconfig:"CLUSTER_NODE_NAME"`
+	SecretKey     string   `yaml:"secret_key" envconfig:"CLUSTER_SECRET_KEY"`
+	Join          []string `yaml:"join" envconfig:"CLUSTER_JOIN"`
+	AdvertiseAddr string   `yaml:"advertise_addr" envconfig:"CLUSTER_ADVERTISE_ADDR"`
+	AdvertisePort int      `yaml:"advertise_port" envconfig:"CLUSTER_ADVERTISE_PORT"`
+	BindAddr      string   `yaml:"bind_addr" envconfig:"CLUSTER_BIND_ADDR"`
+	BindPort      int      `yaml:"bind_port" envconfig:"CLUSTER_BIND_PORT"`
+	LogLevel      string   `yaml:"log_level" envconfig:"CLUSTER_LOG_LEVEL"`
 }
 
-func LoadConfig(path string) (*Config, error) {
-	yamlFile, err := os.ReadFile(path)
+// LoadConfig reads the configuration from a YAML file and environment variables.
+func LoadConfig(filename string) (*Config, error) {
+	var config Config
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	var config Config
-	err = yaml.Unmarshal(yamlFile, &config)
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		return nil, err
 	}
+
+	err = envconfig.Process("", &config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &config, nil
 }
 

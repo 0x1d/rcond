@@ -54,6 +54,23 @@ func NewAgent(clusterConfig *config.ClusterConfig, clusterEvents map[string]func
 	return &Agent{Serf: serf}, nil
 }
 
+func Up(clusterConfig *config.ClusterConfig) (*Agent, error) {
+	if clusterConfig.Enabled {
+		log.Printf("[INFO] Starting cluster agent on %s:%d", clusterConfig.BindAddr, clusterConfig.BindPort)
+		clusterAgent, err := NewAgent(clusterConfig, ClusterEventsMap())
+		if err != nil {
+			log.Print(err)
+			return nil, err
+		}
+		// join nodes in the cluster if the join addresses are provided
+		if len(clusterConfig.Join) > 0 {
+			clusterAgent.Join(clusterConfig.Join, true)
+		}
+		return clusterAgent, nil
+	}
+	return nil, nil
+}
+
 // Event sends a custom event to the Serf cluster.
 // It marshals the provided ClusterEvent into JSON and then uses Serf's UserEvent method to send the event.
 func (a *Agent) Event(event ClusterEvent) error {
