@@ -12,8 +12,11 @@ import (
 func Configure(appConfig *config.Config) error {
 	log.Print("[INFO] Configure system")
 	// configure hostname
-	if err := network.SetHostname(appConfig.Hostname); err != nil {
-		log.Printf("[ERROR] setting hostname failed: %s", err)
+	if appConfig.Hostname != "" {
+		log.Printf("[INFO] update hostname to %s", appConfig.Hostname)
+		if err := network.SetHostname(appConfig.Hostname); err != nil {
+			log.Printf("[ERROR] setting hostname failed: %s", err)
+		}
 	}
 	// configure network connections
 	for _, connection := range appConfig.Network.Connections {
